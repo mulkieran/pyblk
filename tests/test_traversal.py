@@ -32,7 +32,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from pyblk import _traversal
+import pyblk
 
 import pytest
 
@@ -81,7 +81,7 @@ else:
             """
             Verify slaves do not contain originating device.
             """
-            assert device not in _traversal.slaves(CONTEXT, device)
+            assert device not in pyblk.slaves(CONTEXT, device)
 
         @given(
            strategies.sampled_from(HOLDERS),
@@ -91,7 +91,7 @@ else:
             """
             Verify holders do not contain originating device.
             """
-            assert device not in _traversal.holders(CONTEXT, device)
+            assert device not in pyblk.holders(CONTEXT, device)
 
         @given(
            strategies.sampled_from(EITHERS),
@@ -109,14 +109,14 @@ else:
             If recursive is True, test ancestor/descendant relationship.
             If recursive is False, tests parent/child relationship.
             """
-            slaves = list(_traversal.slaves(CONTEXT, device, recursive))
+            slaves = list(pyblk.slaves(CONTEXT, device, recursive))
             for slave in slaves:
                 assert device in list(
-                   _traversal.holders(CONTEXT, slave, recursive)
+                   pyblk.holders(CONTEXT, slave, recursive)
                 )
 
-            holders = list(_traversal.holders(CONTEXT, device, recursive))
+            holders = list(pyblk.holders(CONTEXT, device, recursive))
             for holder in holders:
                 assert device in list(
-                   _traversal.slaves(CONTEXT, holder, recursive)
+                   pyblk.slaves(CONTEXT, holder, recursive)
                 )

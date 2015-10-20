@@ -1,2 +1,22 @@
+# python
+*.pyc
+
 # pyreverse build directory
 _pyreverse
+
+# pytest
+.cache
+*-tests.xml
+
+# coverage
+.coverage
+htmlcov
+
+# tox
+.tox
+
+# distutils
+pyblk.egg-info
+
+# hypothesis
+.hypothesis
