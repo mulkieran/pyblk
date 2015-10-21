@@ -1,0 +1,13 @@
+TOX=tox
+
+.PHONY: lint
+lint:
+	$(TOX) -e lint
+
+.PHONY: coverage
+coverage:
+	$(TOX) -e coverage
+
+.PHONY: test
+test:
+	$(TOX) -e test

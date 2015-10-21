@@ -247,7 +247,6 @@ class SysfsGraphs(object):
         :returns: a graph
         :rtype: `MultiDiGraph`
         """
-        # pylint: disable=star-args
         devices = (d for d in context.list_devices(**kwargs))
         graphs = (cls.parents_and_children(context, d) for d in devices)
         return nx.compose_all(chain([nx.MultiDiGraph()], graphs), name="sysfs")
