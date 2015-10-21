@@ -18,36 +18,43 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    pyblk
-    =====
+    tests.test_compare
+    ==================
 
-    Graphing facilities for devices.
+    Tests graph comparison.
 
-    .. moduleauthor::  Anne Mulhern  <amulhern@redhat.com>
+    .. moduleauthor:: mulhern <amulhern@redhat.com>
 """
 
-from ._graphs import DisplayGraph
-from ._graphs import GenerateGraph
-from ._graphs import PrintGraph
-from ._graphs import RewriteGraph
 
-from ._decorations import Decorator
-from ._decorations import UdevProperties
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-from ._compare import Compare
+import networkx as nx
 
-from ._print import Print
+import pyblk
 
-from ._structure import DMPartitionGraphs
-from ._structure import PartitionGraphs
-from ._structure import SpindleGraphs
-from ._structure import SysfsGraphs
-from ._structure import SysfsTraversal
+from ._constants import CONTEXT
 
-from ._traversal import holders
-from ._traversal import slaves
 
-from ._types import EdgeTypes
-from ._types import NodeTypes
+class TestGraphComparison(object):
+    """
+    Compare storage graphs more or less stringently.
+    """
+    # pylint: disable=too-few-public-methods
 
-from ._utils import GraphUtils
+    def test_equal(self, tmpdir):
+        """
+        Verify that two identical graphs are equivalent.
+        """
+        home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
+        pyblk.RewriteGraph.convert_graph(home_graph)
+        filepath = str(tmpdir.join('test.gml'))
+        nx.write_gml(home_graph, filepath)
+
+        graph1 = nx.read_gml(filepath)
+        graph2 = nx.read_gml(filepath)
+
+        assert pyblk.Compare.is_equivalent(graph1, graph2)

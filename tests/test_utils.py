@@ -18,36 +18,36 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    pyblk
-    =====
+    tests.test_utils
+    ================
 
-    Graphing facilities for devices.
+    Tests utilities.
 
-    .. moduleauthor::  Anne Mulhern  <amulhern@redhat.com>
+    .. moduleauthor:: mulhern <amulhern@redhat.com>
 """
 
-from ._graphs import DisplayGraph
-from ._graphs import GenerateGraph
-from ._graphs import PrintGraph
-from ._graphs import RewriteGraph
 
-from ._decorations import Decorator
-from ._decorations import UdevProperties
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-from ._compare import Compare
+import pyblk
 
-from ._print import Print
+from ._constants import CONTEXT
 
-from ._structure import DMPartitionGraphs
-from ._structure import PartitionGraphs
-from ._structure import SpindleGraphs
-from ._structure import SysfsGraphs
-from ._structure import SysfsTraversal
+class TestGraphUtils(object):
+    """
+    Test utilities that work over networkx graphs.
+    """
+    # pylint: disable=too-few-public-methods
 
-from ._traversal import holders
-from ._traversal import slaves
+    def test_roots(self):
+        """
+        Verify that roots are really roots.
+        """
+        home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
+        roots = pyblk.GraphUtils.get_roots(home_graph)
+        in_degrees = home_graph.in_degree(roots)
 
-from ._types import EdgeTypes
-from ._types import NodeTypes
-
-from ._utils import GraphUtils
+        assert all(in_degrees[r] == 0 for r in roots)

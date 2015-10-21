@@ -45,8 +45,6 @@ from hypothesis import Settings
 from ._constants import CONTEXT
 from ._constants import EITHERS
 
-# pylint: disable=too-many-function-args
-
 NUM_TESTS = 5
 
 # Use conditional to avoid processing tests if number of examples is too small.
@@ -179,44 +177,3 @@ class TestDMPartitionGraphs(object):
         """
         graph = pyblk.DMPartitionGraphs.complete(CONTEXT)
         assert nx.is_directed_acyclic_graph(graph)
-
-
-class TestGraphNodeDecorations(object):
-    """
-    Test decorating structure graphs.
-    """
-    # pylint: disable=too-few-public-methods
-
-    def test_devpath(self):
-        """
-        Test that the value of DEVPATH is the same as the key of the node.
-        """
-        graph = pyblk.PartitionGraphs.complete(CONTEXT)
-        props = pyblk.UdevProperties.udev_properties(
-           CONTEXT,
-           graph,
-           ['DEVPATH']
-        )
-        devpaths = props['UDEV']
-        assert all(devpaths[k]['DEVPATH'] == k for k in devpaths)
-
-
-class TestGraphComparison(object):
-    """
-    Compare storage graphs more or less stringently.
-    """
-    # pylint: disable=too-few-public-methods
-
-    def test_equal(self, tmpdir):
-        """
-        Verify that two identical graphs are equivalent.
-        """
-        home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
-        pyblk.RewriteGraph.convert_graph(home_graph)
-        filepath = str(tmpdir.join('test.gml'))
-        nx.write_gml(home_graph, filepath)
-
-        graph1 = nx.read_gml(filepath)
-        graph2 = nx.read_gml(filepath)
-
-        assert pyblk.Compare.is_equivalent(graph1, graph2)

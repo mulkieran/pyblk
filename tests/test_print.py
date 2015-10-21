@@ -18,36 +18,43 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    pyblk
-    =====
+    tests.test_print
+    ================
 
-    Graphing facilities for devices.
+    Tests string representation of graph.
 
-    .. moduleauthor::  Anne Mulhern  <amulhern@redhat.com>
+    .. moduleauthor:: mulhern <amulhern@redhat.com>
 """
 
-from ._graphs import DisplayGraph
-from ._graphs import GenerateGraph
-from ._graphs import PrintGraph
-from ._graphs import RewriteGraph
 
-from ._decorations import Decorator
-from ._decorations import UdevProperties
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-from ._compare import Compare
+import pyblk
 
-from ._print import Print
+from ._constants import CONTEXT
 
-from ._structure import DMPartitionGraphs
-from ._structure import PartitionGraphs
-from ._structure import SpindleGraphs
-from ._structure import SysfsGraphs
-from ._structure import SysfsTraversal
 
-from ._traversal import holders
-from ._traversal import slaves
+class TestGraphPrint(object):
+    """
+    Test aspects of string representation of graphs.
+    """
+    # pylint: disable=too-few-public-methods
 
-from ._types import EdgeTypes
-from ._types import NodeTypes
-
-from ._utils import GraphUtils
+    def test_num_string(self):
+        """
+        Verify that the number of strings is at least a node's out-degree.
+        """
+        home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
+        node = home_graph.nodes()[0]
+        lines = pyblk.Print.node_strings(
+           lambda x: "a node",
+           "{0}",
+           home_graph,
+           True,
+           0,
+           node
+        )
+        assert len(list(lines)) >= home_graph.out_degree(node)
