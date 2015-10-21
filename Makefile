@@ -4,22 +4,14 @@ upload-release:
 
 .PHONY: pylint
 pylint:
-	PYTHONPATH=src pylint src/pyblk \
-		--reports=no \
-		--disable=I \
-		--disable=bad-continuation \
-		--disable=duplicate-code \
-		--msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}"
+	PYTHONPATH=src ./check.py src/pyblk
 
 .PHONY: pylint-tests
 pylint-tests:
-	PYTHONPATH=src pylint tests \
-		--reports=no \
-		--disable=I \
-		--disable=bad-continuation \
-		--disable=duplicate-code \
-		--disable=no-self-use \
-		--msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}"
+	PYTHONPATH=src ./check.py tests
+
+.PHONY: check
+check: pylint pylint-tests
 
 PYREVERSE_OPTS = --output=pdf
 .PHONY: view
