@@ -20,3 +20,8 @@ pyblk.egg-info
 
 # hypothesis
 .hypothesis
+
+# sphinx
+doc/_build
+doc/pyblk
+doc/tests
