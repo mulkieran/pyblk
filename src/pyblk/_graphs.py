@@ -135,16 +135,13 @@ class PrintGraph(object):
     # pylint: disable=too-few-public-methods
 
     @staticmethod
-    def print_graph(out, graph, inverse=False):
+    def print_graph(out, graph):
         """
         Print a graph.
 
         :param `file` out: print destination
         :param `MultiDiGraph` graph: the graph
         """
-        if inverse:
-            graph = graph.reverse(copy=True)
-
         key_map = nx.get_node_attributes(graph, 'identifier')
         key_func = lambda n: key_map[n]
         roots = sorted(_utils.GraphUtils.get_roots(graph), key=key_func)
