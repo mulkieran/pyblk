@@ -2,17 +2,6 @@
 upload-release:
 	python setup.py release register sdist upload
 
-.PHONY: pylint
-pylint:
-	PYTHONPATH=src ./check.py src/pyblk
-
-.PHONY: pylint-tests
-pylint-tests:
-	PYTHONPATH=src ./check.py tests
-
-.PHONY: check
-check: pylint pylint-tests
-
 PYREVERSE_OPTS = --output=pdf
 .PHONY: view
 view:
