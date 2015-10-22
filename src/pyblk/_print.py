@@ -31,8 +31,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import networkx as nx
-
 
 class Print(object):
     """
@@ -86,8 +84,12 @@ class Print(object):
         # pylint: disable=too-many-arguments
         yield cls.node_string(info_func, fmt, orphan, indent, node)
 
-        key_map = nx.get_node_attributes(graph, 'identifier')
-        for succ in sorted(graph.successors(node), key=lambda x: key_map[x]):
+
+        successors = sorted(
+           graph.successors(node),
+           key=lambda x: info_func(x)[0]
+        )
+        for succ in successors:
             lines = cls.node_strings(
                info_func,
                fmt,
