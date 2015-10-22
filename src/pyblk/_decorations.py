@@ -75,11 +75,11 @@ class UdevProperties(object):
         :returns: dict of property name, node, property value
         :rtype: dict
         """
-        dicts = {'UDEV' : dict()}
+        udev_dict = dict()
         for node in cls.decorated(graph):
-            dicts['UDEV'][node] = cls.properties(context, node, names)
+            udev_dict[node] = cls.properties(context, node, names)
 
-        return dicts
+        return {'UDEV' : udev_dict}
 
 
 class Decorator(object):
