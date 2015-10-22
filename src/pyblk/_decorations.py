@@ -82,6 +82,31 @@ class UdevProperties(object):
         return {'UDEV' : udev_dict}
 
 
+class DifferenceMarkers(object):
+    """
+    Difference markers, either added or removed or present.
+    """
+    # pylint: disable=too-few-public-methods
+
+    @staticmethod
+    def node_differences(graph, difference, value):
+        """
+        Get node differences in ``graph`` based on ``difference``.
+
+        :param `MultiDiGraph` graph: the graph
+        :param `MultiDiGraph` difference: a graph representing the difference
+        :param str value: marker to add to graph
+
+        If node is in difference, adds ``value`` as "diffstatus" attribute.
+        """
+        ds_dict = dict()
+        for node in graph:
+            if node in difference:
+                ds_dict[node] = value
+
+        return {'diffstatus': ds_dict}
+
+
 class Decorator(object):
     """
     Decorate graph elements with attributes.

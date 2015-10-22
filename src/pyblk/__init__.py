@@ -32,6 +32,7 @@ from ._graphs import PrintGraph
 from ._graphs import RewriteGraph
 
 from ._decorations import Decorator
+from ._decorations import DifferenceMarkers
 from ._decorations import UdevProperties
 
 from ._compare import Compare

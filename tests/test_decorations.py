@@ -58,6 +58,33 @@ class TestGraphNodeDecorations(object):
         devpaths = props['UDEV']
         assert all(devpaths[k]['DEVPATH'] == k for k in devpaths)
 
+    def test_empty_differences(self):
+        """
+        Test that an empty difference value leads to an empty attribute table.
+        """
+        graph = pyblk.PartitionGraphs.complete(CONTEXT)
+        markers = pyblk.DifferenceMarkers.node_differences(
+           graph,
+           nx.MultiDiGraph(),
+           "present"
+        )
+        assert not markers['diffstatus']
+
+    def test_equal_differences(self):
+        """
+        Test that an equal difference gives an attribute table w/ an entry
+        for every node.
+        """
+        graph = pyblk.PartitionGraphs.complete(CONTEXT)
+        markers = pyblk.DifferenceMarkers.node_differences(
+           graph,
+           graph.copy(),
+           "present"
+        )
+        diffstats = markers['diffstatus']
+        assert len(diffstats) == len(graph)
+        assert all(diffstats[n] == 'present' for n in graph)
+
 
 class TestNodeDecorating(object):
     """
