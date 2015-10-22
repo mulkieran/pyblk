@@ -71,7 +71,7 @@ class Print(object):
            fmt.format(*info_func(node))
 
     @classmethod
-    def output_nodes(cls, out, info_func, fmt, graph, orphan, indent, node):
+    def node_strings(cls, info_func, fmt, graph, orphan, indent, node):
         """
         Print nodes reachable from ``node`` including itself.
 
@@ -84,15 +84,11 @@ class Print(object):
         :param `Node` node: the node to print
         """
         # pylint: disable=too-many-arguments
-        print(
-           cls.node_string(info_func, fmt, orphan, indent, node),
-           end="\n",
-           file=out,
-        )
+        yield cls.node_string(info_func, fmt, orphan, indent, node)
+
         key_map = nx.get_node_attributes(graph, 'identifier')
         for succ in sorted(graph.successors(node), key=lambda x: key_map[x]):
-            cls.output_nodes(
-               out,
+            lines = cls.node_strings(
                info_func,
                fmt,
                graph,
@@ -100,3 +96,5 @@ class Print(object):
                indent if orphan else indent + cls.indentation(),
                succ
             )
+            for line in lines:
+                yield line

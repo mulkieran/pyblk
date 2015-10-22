@@ -161,8 +161,7 @@ class PrintGraph(object):
             return [devname or key_map[node]]
 
         for root in roots:
-            _print.Print.output_nodes(
-               out,
+            lines = _print.Print.node_strings(
                info_func,
                '{0}',
                graph,
@@ -170,3 +169,5 @@ class PrintGraph(object):
                0,
                root
             )
+            for line in lines:
+                print(line, end="\n", file=out)
