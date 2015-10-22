@@ -50,4 +50,4 @@ class GraphUtils(object):
         :returns: the roots of the graph
         :rtype: list of `Node`
         """
-        return [n for n in nx.nodes_iter(graph) if not nx.ancestors(graph, n)]
+        return [n for n in graph if not nx.ancestors(graph, n)]
