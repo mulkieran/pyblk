@@ -5,11 +5,23 @@ import subprocess
 import sys
 
 arg_map = {
+   "src/lsdev" : [
+      "--reports=no",
+      "--disable=I",
+      "--disable=bad-continuation",
+      "--msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}'"
+   ],
    "src/pyblk" : [
       "--reports=no",
       "--disable=I",
       "--disable=bad-continuation",
       "--disable=duplicate-code",
+      "--msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}'"
+   ],
+   "src/showdev" : [
+      "--reports=no",
+      "--disable=I",
+      "--disable=bad-continuation",
       "--msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}'"
    ],
    "tests" : [
