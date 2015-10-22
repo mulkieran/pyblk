@@ -35,6 +35,7 @@ from ._decorations import Decorator
 from ._decorations import UdevProperties
 
 from ._compare import Compare
+from ._compare import Differences
 
 from ._print import Print
 

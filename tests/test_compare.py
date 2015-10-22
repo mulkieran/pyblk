@@ -58,3 +58,39 @@ class TestGraphComparison(object):
         graph2 = nx.read_gml(filepath)
 
         assert pyblk.Compare.is_equivalent(graph1, graph2)
+
+
+class TestGraphDifference(object):
+    """
+    Test ability to find differences among graphs.
+    """
+
+    def test_equal(self, tmpdir):
+        """
+        Verify that two identical graphs are equivalent.
+        """
+        home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
+        pyblk.RewriteGraph.convert_graph(home_graph)
+        filepath = str(tmpdir.join('test.gml'))
+        nx.write_gml(home_graph, filepath)
+
+        graph1 = nx.read_gml(filepath)
+        graph2 = nx.read_gml(filepath)
+
+        (diff1, diff2) = pyblk.Differences.node_differences(graph1, graph2)
+        assert len(diff1) == 0 and len(diff2) == 0
+
+    def test_empty(self):
+        """
+        Verify that one graph and an empty graph have the correct differences.
+        """
+        home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
+        empty_graph = nx.MultiDiGraph()
+
+        (diff1, diff2) = pyblk.Differences.node_differences(
+           home_graph,
+           empty_graph
+        )
+
+        assert pyblk.Compare.is_equivalent(diff1, home_graph)
+        assert pyblk.Compare.is_equivalent(diff2, empty_graph)
