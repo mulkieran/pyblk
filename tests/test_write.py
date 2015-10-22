@@ -18,40 +18,41 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    pyblk
-    =====
+    tests.test_write
+    ================
 
-    Graphing facilities for devices.
+    Tests rewriting of graph to string values.
 
-    .. moduleauthor::  Anne Mulhern  <amulhern@redhat.com>
+    .. moduleauthor:: mulhern <amulhern@redhat.com>
 """
 
-from ._graphs import DisplayGraph
-from ._graphs import GenerateGraph
-from ._graphs import PrintGraph
-from ._graphs import RewriteGraph
 
-from ._decorations import Decorator
-from ._decorations import DifferenceMarkers
-from ._decorations import UdevProperties
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-from ._compare import Compare
-from ._compare import Differences
+import networkx as nx
 
-from ._print import Print
+import pyblk
 
-from ._structure import DMPartitionGraphs
-from ._structure import PartitionGraphs
-from ._structure import SpindleGraphs
-from ._structure import SysfsGraphs
-from ._structure import SysfsTraversal
+from ._constants import CONTEXT
 
-from ._traversal import holders
-from ._traversal import slaves
 
-from ._types import EdgeTypes
-from ._types import NodeTypes
+class TestGraphWrite(object):
+    """
+    Test aspects of rewriting graph attributes.
+    """
+    # pylint: disable=too-few-public-methods
 
-from ._utils import GraphUtils
+    def test_isomorphic(self):
+        """
+        Verify that after rewriting the graphs are isomorphic.
+        """
+        home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
+        new_graph = home_graph.copy()
 
-from ._write import Rewriter
+        pyblk.Rewriter.stringize(new_graph)
+
+        assert nx.is_isomorphic(home_graph, new_graph)
+        assert len(home_graph.edges()) == len(new_graph.edges())
