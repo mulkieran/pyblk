@@ -143,10 +143,8 @@ class PrintGraph(object):
         :param `MultiDiGraph` graph: the graph
         """
         key_map = nx.get_node_attributes(graph, 'identifier')
-        key_func = lambda n: key_map[n]
-        roots = sorted(_utils.GraphUtils.get_roots(graph), key=key_func)
-
         udev_map = nx.get_node_attributes(graph, 'UDEV')
+        diffstatus_map = nx.get_node_attributes(graph, 'diffstatus')
 
         def info_func(node):
             """
@@ -158,7 +156,19 @@ class PrintGraph(object):
             """
             udev_info = udev_map.get(node)
             devname = udev_info and udev_info.get('DEVNAME')
-            return [devname or key_map[node]]
+            diffstatus = diffstatus_map.get(node)
+            name = devname or key_map[node]
+            if diffstatus is not None:
+                if diffstatus == "added":
+                    name = "<<%s>>" % name
+                elif diffstatus == "removed":
+                    name = ">>%s<<" % name
+            return [name]
+
+        roots = sorted(
+           _utils.GraphUtils.get_roots(graph),
+           key=lambda n: info_func(n)[0]
+        )
 
         for root in roots:
             lines = _print.Print.node_strings(
