@@ -65,7 +65,7 @@ class TestGraphNodeDecorations(object):
         graph = pyblk.PartitionGraphs.complete(CONTEXT)
         markers = pyblk.DifferenceMarkers.node_differences(
            graph,
-           nx.MultiDiGraph(),
+           nx.DiGraph(),
            "present"
         )
         assert not markers['diffstatus']

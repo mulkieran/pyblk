@@ -45,7 +45,7 @@ class GraphUtils(object):
         """
         Get the roots of a graph.
 
-        :param `MultiDiGraph` graph: the graph
+        :param `DiGraph` graph: the graph
 
         :returns: the roots of the graph
         :rtype: list of `Node`

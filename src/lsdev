@@ -73,7 +73,7 @@ def do_action(graph, action, out):
     """
     Do the action.
 
-    :param `MultiDiGraph` graph: the graph
+    :param `DiGraph` graph: the graph
     :param str action: the action to perform
     :param file out: output stream for results
     """

@@ -90,11 +90,11 @@ class Differences(object):
         """
         Find the differences between graph1 and graph2 as a pair of graphs.
 
-        :param `MultiDiGraph` graph1: a graph
-        :param `MultiDiGraph` graph2: a graph
+        :param `DiGraph` graph1: a graph
+        :param `DiGraph` graph2: a graph
 
         :returns: a pair of graphs, representing graph1 - graph2 and vice-versa
-        :rtype: tuple of `MultiDiGraph`
+        :rtype: tuple of `DiGraph`
         """
         return (
            graph1.subgraph(n for n in graph1 if not n in graph2),

@@ -93,8 +93,8 @@ class DifferenceMarkers(object):
         """
         Get node differences in ``graph`` based on ``difference``.
 
-        :param `MultiDiGraph` graph: the graph
-        :param `MultiDiGraph` difference: a graph representing the difference
+        :param `DiGraph` graph: the graph
+        :param `DiGraph` difference: a graph representing the difference
         :param str value: marker to add to graph
 
         If node is in difference, adds ``value`` as "diffstatus" attribute.
@@ -118,7 +118,7 @@ class Decorator(object):
         """
         Decorate the graph.
 
-        :param `MultiDiGraph` graph: the graph
+        :param `DiGraph` graph: the graph
         :param properties: a dict of properties
         :type properties: dict of property name -> graph element -> value
         """

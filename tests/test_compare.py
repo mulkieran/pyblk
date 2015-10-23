@@ -85,7 +85,7 @@ class TestGraphDifference(object):
         Verify that one graph and an empty graph have the correct differences.
         """
         home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
-        empty_graph = nx.MultiDiGraph()
+        empty_graph = nx.DiGraph()
 
         (diff1, diff2) = pyblk.Differences.node_differences(
            home_graph,

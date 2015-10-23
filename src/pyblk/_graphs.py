@@ -55,7 +55,7 @@ class GenerateGraph(object):
 
         :param `Context` context: the libudev context
         :return: the generated graph
-        :rtype: `MultiDiGraph`
+        :rtype: `DiGraph`
         """
         graph_classes = [
            _structure.DMPartitionGraphs,
@@ -74,7 +74,7 @@ class GenerateGraph(object):
         Decorate a graph with additional properties.
 
         :param `Context` context: the libudev context
-        :param `MultiDiGraph` graph: the graph
+        :param `DiGraph` graph: the graph
         """
         properties = ['DEVNAME', 'DEVPATH', 'DEVTYPE']
         table = UdevProperties.udev_properties(context, graph, properties)
@@ -107,7 +107,7 @@ class DisplayGraph(object):
         """
         Convert graph to graphviz format.
 
-        :param `MultiDiGraph` graph: the graph
+        :param `DiGraph` graph: the graph
         :returns: a graphviz graph
 
         Designate its general layout and mark or rearrange nodes as appropriate.
@@ -140,7 +140,7 @@ class PrintGraph(object):
         Print a graph.
 
         :param `file` out: print destination
-        :param `MultiDiGraph` graph: the graph
+        :param `DiGraph` graph: the graph
         """
         key_map = nx.get_node_attributes(graph, 'identifier')
         udev_map = nx.get_node_attributes(graph, 'UDEV')

@@ -72,7 +72,7 @@ class GraphMethods(object):
         """
         Add nodes in ``nodes`` to graph.
 
-        :param `MultiDiGraph` graph: the graph
+        :param `DiGraph` graph: the graph
         :param nodes: source nodes
         :type nodes: list of object
         :param `NodeType` node_type: a node type
@@ -95,7 +95,7 @@ class GraphMethods(object):
         """
         Add edges to graph from sources to targets.
 
-        :param `MultiDiGraph` graph: the graph
+        :param `DiGraph` graph: the graph
         :param sources: source nodes
         :type sources: list of `object`
         :param targets: target nodes
@@ -124,7 +124,7 @@ class SysfsTraversal(object):
         """
         Recursively defined function to generate a graph from ``device``.
 
-        :param `MultiDiGraph` graph: the graph
+        :param `DiGraph` graph: the graph
         :param `Context` context: the libudev context
         :param `Device` device: the device
         :param `SysfsTraversalConfig` config: traversal configuration
@@ -169,9 +169,9 @@ class SysfsTraversal(object):
         :param `Device` device: the device
         :param `SysfsTraversalConfig` config: traversal configuration
         :returns: a graph
-        :rtype: `MultiDiGraph`
+        :rtype: `DiGraph`
         """
-        graph = nx.MultiDiGraph()
+        graph = nx.DiGraph()
         cls.do_level(graph, context, device, config)
         return graph
 
@@ -184,7 +184,7 @@ class SysfsTraversal(object):
         :param `Device` device: the device
         :param bool recursive: True for recursive, False otherwise
         :returns: a graph
-        :rtype: `MultiDiGraph`
+        :rtype: `DiGraph`
         """
         config = SysfsTraversalConfig(slaves=False, recursive=recursive)
         return cls.sysfs_traversal(context, device, config)
@@ -198,7 +198,7 @@ class SysfsTraversal(object):
         :param `Device` device: the device
         :param bool recursive: True for recursive, False otherwise
         :returns: a graph
-        :rtype: `MultiDiGraph`
+        :rtype: `DiGraph`
         """
         config = SysfsTraversalConfig(slaves=True, recursive=recursive)
         return cls.sysfs_traversal(context, device, config)
@@ -218,7 +218,7 @@ class SysfsGraphs(object):
         :param `Device` device: the device
         :param bool recursive: True for recursive, False otherwise
         :returns: a graph
-        :rtype: `MultiDiGraph`
+        :rtype: `DiGraph`
         """
         return nx.compose(
            SysfsTraversal.slaves(context, device, recursive),
@@ -233,7 +233,7 @@ class SysfsGraphs(object):
         :param `Context` context: the libudev context
         :param `Device` device: the device
         :returns: a graph
-        :rtype: `MultiDiGraph`
+        :rtype: `DiGraph`
         """
         return cls.slaves_and_holders(context, device, recursive=False)
 
@@ -245,11 +245,11 @@ class SysfsGraphs(object):
         :param `Context` context: a udev context
         :param kwargs: arguments for filtering the devices.
         :returns: a graph
-        :rtype: `MultiDiGraph`
+        :rtype: `DiGraph`
         """
         devices = (d for d in context.list_devices(**kwargs))
         graphs = (cls.parents_and_children(context, d) for d in devices)
-        return nx.compose_all(chain([nx.MultiDiGraph()], graphs), name="sysfs")
+        return nx.compose_all(chain([nx.DiGraph()], graphs), name="sysfs")
 
 
 class SysfsBlockGraphs(object): # pragma: no cover
@@ -265,7 +265,7 @@ class SysfsBlockGraphs(object): # pragma: no cover
 
         :param `Context` context: a udev context
         :returns: a graph
-        :rtype: `MultiDiGraph`
+        :rtype: `DiGraph`
         """
         return SysfsGraphs.complete(context, subsystem="block")
 
@@ -282,9 +282,9 @@ class PartitionGraphs(object):
 
         :param `Device` device: the partition device
         :returns: a graph
-        :rtype: `MultiDiGraph`
+        :rtype: `DiGraph`
         """
-        graph = nx.MultiDiGraph()
+        graph = nx.DiGraph()
         parent = device.parent
         GraphMethods.add_edges(
            graph,
@@ -303,13 +303,13 @@ class PartitionGraphs(object):
 
         :param `Context` context: a udev context
         :returns: a graph
-        :rtype: `MultiDiGraph`
+        :rtype: `DiGraph`
         """
         block_devices = context.list_devices(subsystem="block")
         partitions = block_devices.match_property('DEVTYPE', 'partition')
         graphs = (cls.partition_graph(d) for d in partitions)
         return nx.compose_all(
-           chain([nx.MultiDiGraph()], graphs),
+           chain([nx.DiGraph()], graphs),
            name="partiton"
         )
 
@@ -326,9 +326,9 @@ class SpindleGraphs(object):
 
         :param `Device` device: the partition device
         :returns: a graph
-        :rtype: `MultiDiGraph`
+        :rtype: `DiGraph`
         """
-        graph = nx.MultiDiGraph()
+        graph = nx.DiGraph()
 
         wwn = device.get('ID_WWN_WITH_EXTENSION')
         if wwn is None:
@@ -351,13 +351,13 @@ class SpindleGraphs(object):
 
         :param `Context` context: a udev context
         :returns: a graph
-        :rtype: `MultiDiGraph`
+        :rtype: `DiGraph`
         """
         block_devices = context.list_devices(subsystem="block")
         disks = block_devices.match_property('DEVTYPE', 'disk')
         graphs = (cls.spindle_graph(d) for d in disks)
         return nx.compose_all(
-           chain([nx.MultiDiGraph()], graphs),
+           chain([nx.DiGraph()], graphs),
            name='spindle'
         )
 
@@ -376,9 +376,9 @@ class DMPartitionGraphs(object):
         :param `Context` context: a udev context
         :param `Device` device: the partition device
         :returns: a graph
-        :rtype: `MultiDiGraph`
+        :rtype: `DiGraph`
         """
-        graph = nx.MultiDiGraph()
+        graph = nx.DiGraph()
 
         id_part_entry_uuid = device.get('ID_PART_ENTRY_UUID')
         if id_part_entry_uuid is None:
@@ -413,12 +413,12 @@ class DMPartitionGraphs(object):
 
         :param `Context` context: a udev context
         :returns: a graph
-        :rtype: `MultiDiGraph`
+        :rtype: `DiGraph`
         """
         block_devices = context.list_devices(subsystem="block")
         partitions = block_devices.match_property('DEVTYPE', 'partition')
         graphs = (cls.congruence_graph(context, d) for d in partitions)
         return nx.compose_all(
-           chain([nx.MultiDiGraph()], graphs),
+           chain([nx.DiGraph()], graphs),
            name='congruence'
         )

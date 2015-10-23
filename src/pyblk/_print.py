@@ -76,7 +76,7 @@ class Print(object):
         :param `file` out: the output stream to print to
         :param info_func: a function that yields information about a node
         :param fmt: a function that helps format the info
-        :param `MultiDiGraph` graph: the graph
+        :param `DiGraph` graph: the graph
         :param bool orphan: True if this node has no parents, otherwise False
         :param int indent: start printing after ``indent`` spaces
         :param `Node` node: the node to print
