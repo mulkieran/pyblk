@@ -50,7 +50,7 @@ class TestGraphPrint(object):
         home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
         node = home_graph.nodes()[0]
         lines = pyblk.Print.node_strings(
-           lambda x: "a node",
+           lambda x, y=None: ["a node"],
            "{0}",
            home_graph,
            True,

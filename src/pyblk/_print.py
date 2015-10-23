@@ -87,7 +87,7 @@ class Print(object):
 
         successors = sorted(
            graph.successors(node),
-           key=lambda x: info_func(x)[0]
+           key=lambda x: info_func(x, [0])[0]
         )
         for succ in successors:
             lines = cls.node_strings(

@@ -146,14 +146,22 @@ class PrintGraph(object):
         udev_map = nx.get_node_attributes(graph, 'UDEV')
         diffstatus_map = nx.get_node_attributes(graph, 'diffstatus')
 
-        def info_func(node):
+        def info_func(node, indices=None):
             """
             Function to generate information to be printed for ``node``.
 
             :param `Node` node: the node
+            :param indices: list of numeric indices for values or None
+            :type indices: list of int or NoneType
             :returns: a list of informational strings
             :rtype: list of str
+
+            Only values for elements at x in indices are calculated.
+            If indices is None, return an item for every index.
+            If indices is the empty list, return an empty list.
             """
+            if indices == []:
+                return []
             udev_info = udev_map.get(node)
             devname = udev_info and udev_info.get('DEVNAME')
             diffstatus = diffstatus_map.get(node)
