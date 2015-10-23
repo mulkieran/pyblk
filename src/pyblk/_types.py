@@ -36,12 +36,11 @@ import abc
 import six
 
 @six.add_metaclass(abc.ABCMeta)
-class NodeType(object):
+class ElementType(object):
     """
-    Abstract class that represents a node type.
+    Abstract class that represents an element type.
     """
     # pylint: disable=too-few-public-methods
-
     def __str__(self): # pragma: no cover
         return self.__class__.__name__
     __repr__ = __str__
@@ -50,9 +49,16 @@ class NodeType(object):
         # pylint: disable=unused-argument
         return self
 
-    def __copy__(self):
+    def __copy__(self): # pragma: no cover
         return self
 
+@six.add_metaclass(abc.ABCMeta)
+class NodeType(ElementType):
+    """
+    Abstract class that represents a node type.
+    """
+    # pylint: disable=too-few-public-methods
+    pass
 
 class DevicePath(NodeType):
     """
@@ -127,23 +133,12 @@ class NodeTypes(GraphEntityTypes):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class EdgeType(object):
+class EdgeType(ElementType):
     """
     Superclass of edge types.
     """
     # pylint: disable=too-few-public-methods
-
-    def __str__(self): # pragma: no cover
-        return self.__class__.__name__
-    __repr__ = __str__
-
-    def __deepcopy__(self, memo):
-        # pylint: disable=unused-argument
-        return self
-
-    def __copy__(self):
-        return self
-
+    pass
 
 class Slave(EdgeType):
     """
