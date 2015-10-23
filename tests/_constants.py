@@ -48,3 +48,5 @@ HOLDERS = [d for d in DEVICES if list(pyblk.holders(CONTEXT, d, False))]
 BOTHS = list(set(SLAVES).intersection(set(HOLDERS)))
 
 EITHERS = list(set(SLAVES).union(set(HOLDERS)))
+
+GRAPH = pyblk.GenerateGraph.get_graph(CONTEXT, "graph")

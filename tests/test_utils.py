@@ -34,7 +34,7 @@ from __future__ import unicode_literals
 
 import pyblk
 
-from ._constants import CONTEXT
+from ._constants import GRAPH
 
 class TestGraphUtils(object):
     """
@@ -46,8 +46,7 @@ class TestGraphUtils(object):
         """
         Verify that roots are really roots.
         """
-        home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
-        roots = pyblk.GraphUtils.get_roots(home_graph)
-        in_degrees = home_graph.in_degree(roots)
+        roots = pyblk.GraphUtils.get_roots(GRAPH)
+        in_degrees = GRAPH.in_degree(roots)
 
         assert all(in_degrees[r] == 0 for r in roots)

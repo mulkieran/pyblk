@@ -36,7 +36,7 @@ import networkx as nx
 
 import pyblk
 
-from ._constants import CONTEXT
+from ._constants import GRAPH
 
 
 class TestGraphComparison(object):
@@ -49,10 +49,10 @@ class TestGraphComparison(object):
         """
         Verify that two identical graphs are equivalent.
         """
-        home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
-        pyblk.RewriteGraph.convert_graph(home_graph)
+        new_graph = GRAPH.copy()
+        pyblk.RewriteGraph.convert_graph(new_graph)
         filepath = str(tmpdir.join('test.gml'))
-        nx.write_gml(home_graph, filepath)
+        nx.write_gml(new_graph, filepath)
 
         graph1 = nx.read_gml(filepath)
         pyblk.RewriteGraph.deconvert_graph(graph1)
@@ -71,10 +71,10 @@ class TestGraphDifference(object):
         """
         Verify that two identical graphs are equivalent.
         """
-        home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
-        pyblk.RewriteGraph.convert_graph(home_graph)
+        new_graph = GRAPH.copy()
+        pyblk.RewriteGraph.convert_graph(new_graph)
         filepath = str(tmpdir.join('test.gml'))
-        nx.write_gml(home_graph, filepath)
+        nx.write_gml(new_graph, filepath)
 
         graph1 = nx.read_gml(filepath)
         pyblk.RewriteGraph.deconvert_graph(graph1)
@@ -88,13 +88,9 @@ class TestGraphDifference(object):
         """
         Verify that one graph and an empty graph have the correct differences.
         """
-        home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
         empty_graph = nx.DiGraph()
 
-        (diff1, diff2) = pyblk.Differences.node_differences(
-           home_graph,
-           empty_graph
-        )
+        (diff1, diff2) = pyblk.Differences.node_differences(GRAPH, empty_graph)
 
-        assert pyblk.Compare.is_equivalent(diff1, home_graph)
+        assert pyblk.Compare.is_equivalent(diff1, GRAPH)
         assert pyblk.Compare.is_equivalent(diff2, empty_graph)

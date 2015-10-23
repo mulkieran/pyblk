@@ -36,7 +36,7 @@ import networkx as nx
 
 import pyblk
 
-from ._constants import CONTEXT
+from ._constants import GRAPH
 
 
 class TestGraphWrite(object):
@@ -48,32 +48,30 @@ class TestGraphWrite(object):
         """
         Verify that after rewriting the graphs are isomorphic.
         """
-        home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
-        new_graph = home_graph.copy()
+        new_graph = GRAPH.copy()
 
         pyblk.Rewriter.stringize(new_graph)
 
-        assert nx.is_isomorphic(home_graph, new_graph)
-        assert len(home_graph.edges()) == len(new_graph.edges())
+        assert nx.is_isomorphic(GRAPH, new_graph)
+        assert len(GRAPH.edges()) == len(new_graph.edges())
 
     def test_node_identity(self):
         """
         Verify that stringize and destringize are inverses on nodetype
         and that they do not have no effect.
         """
-        home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
-        new_graph = home_graph.copy()
+        new_graph = GRAPH.copy()
 
         pyblk.Rewriter.stringize(new_graph)
 
-        home_types = nx.get_node_attributes(home_graph, 'nodetype')
+        home_types = nx.get_node_attributes(GRAPH, 'nodetype')
         new_types = nx.get_node_attributes(new_graph, 'nodetype')
 
         assert home_types != new_types
 
         pyblk.Rewriter.destringize(new_graph)
 
-        home_types = nx.get_node_attributes(home_graph, 'nodetype')
+        home_types = nx.get_node_attributes(GRAPH, 'nodetype')
         new_types = nx.get_node_attributes(new_graph, 'nodetype')
 
         assert home_types == new_types

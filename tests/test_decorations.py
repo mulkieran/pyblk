@@ -37,22 +37,21 @@ import networkx as nx
 import pyblk
 
 from ._constants import CONTEXT
+from ._constants import GRAPH
 
 
 class TestGraphNodeDecorations(object):
     """
     Test decorating structure graphs.
     """
-    # pylint: disable=too-few-public-methods
 
     def test_devpath(self):
         """
         Test that the value of DEVPATH is the same as the key of the node.
         """
-        graph = pyblk.PartitionGraphs.complete(CONTEXT)
         props = pyblk.UdevProperties.udev_properties(
            CONTEXT,
-           graph,
+           GRAPH,
            ['DEVPATH']
         )
         devpaths = props['UDEV']
@@ -62,9 +61,8 @@ class TestGraphNodeDecorations(object):
         """
         Test that an empty difference value leads to an empty attribute table.
         """
-        graph = pyblk.PartitionGraphs.complete(CONTEXT)
         markers = pyblk.DifferenceMarkers.node_differences(
-           graph,
+           GRAPH,
            nx.DiGraph(),
            "present"
         )
@@ -75,15 +73,14 @@ class TestGraphNodeDecorations(object):
         Test that an equal difference gives an attribute table w/ an entry
         for every node.
         """
-        graph = pyblk.PartitionGraphs.complete(CONTEXT)
         markers = pyblk.DifferenceMarkers.node_differences(
-           graph,
-           graph.copy(),
+           GRAPH,
+           GRAPH.copy(),
            "present"
         )
         diffstats = markers['diffstatus']
-        assert len(diffstats) == len(graph)
-        assert all(diffstats[n] == 'present' for n in graph)
+        assert len(diffstats) == len(GRAPH)
+        assert all(diffstats[n] == 'present' for n in GRAPH)
 
 
 class TestNodeDecorating(object):
@@ -96,11 +93,13 @@ class TestNodeDecorating(object):
         """
         Test that decorating actually sets the proper value.
         """
-        graph = pyblk.PartitionGraphs.complete(CONTEXT)
-        nodes = graph.nodes()
+        new_graph = GRAPH.copy()
         properties = {
-           "dummy": dict((n, "dummy") for n in nodes)
+           "dummy": dict((n, "dummy") for n in new_graph)
         }
-        pyblk.Decorator.decorate(graph, properties)
-        values = nx.get_node_attributes(graph, "dummy").values()
-        assert all(n == "dummy" for n in values)
+        pyblk.Decorator.decorate(new_graph, properties)
+        values = nx.get_node_attributes(new_graph, "dummy").values()
+        assert values and all(n == "dummy" for n in values)
+
+        others = nx.get_node_attributes(GRAPH, "dummy").values()
+        assert not others

@@ -34,7 +34,7 @@ from __future__ import unicode_literals
 
 import pyblk
 
-from ._constants import CONTEXT
+from ._constants import GRAPH
 
 
 class TestGraphPrint(object):
@@ -47,14 +47,13 @@ class TestGraphPrint(object):
         """
         Verify that the number of strings is at least a node's out-degree.
         """
-        home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
-        node = home_graph.nodes()[0]
+        node = GRAPH.nodes()[0]
         lines = pyblk.Print.node_strings(
            lambda x, y=None: ["a node"],
            "{0}",
-           home_graph,
+           GRAPH,
            True,
            0,
            node
         )
-        assert len(list(lines)) >= home_graph.out_degree(node)
+        assert len(list(lines)) >= GRAPH.out_degree(node)
