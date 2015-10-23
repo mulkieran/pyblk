@@ -64,7 +64,32 @@ class WWN(NodeType):
 
 WWN = WWN() # pylint: disable=invalid-name
 
-class NodeTypes(object):
+@six.add_metaclass(abc.ABCMeta)
+class GraphEntityTypes(object):
+    """
+    Enumeration of types corresponding to a graph entity.
+    """
+
+    @classmethod
+    @abc.abstractmethod
+    def types(cls):
+        """
+        Return a list of the types in the class.
+        """
+        raise NotImplementedError() # pragma: no cover
+
+    @classmethod
+    def get_type(cls, name):
+        """
+        Return the type object corresponding to ``name``.
+
+        :returns: the type object that matches ``name`` or None
+        :rtype: `NodeType` or NoneType
+        """
+        return next((obj for obj in cls.types() if str(obj) == name), None)
+
+
+class NodeTypes(GraphEntityTypes):
     """
     Enumeration of node types.
     """
@@ -140,7 +165,7 @@ class Congruence(EdgeType):
 
 Congruence = Congruence() # pylint: disable=invalid-name
 
-class EdgeTypes(object):
+class EdgeTypes(GraphEntityTypes):
     """
     Enumeration of edge types.
     """
@@ -161,3 +186,16 @@ class EdgeTypes(object):
         :rtype: bool
         """
         return edge.attr['edgetype'] == str(edge_type)
+
+    @classmethod
+    def types(cls):
+        """
+        :returns: a list of all ``EdgeType`` objects.
+        :rtype: list of ``EdgeType``
+        """
+        return [
+           cls.CONGRUENCE,
+           cls.PARTITION,
+           cls.SLAVE,
+           cls.SPINDLE
+        ]
