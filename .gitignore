@@ -25,3 +25,12 @@ pyblk.egg-info
 doc/_build
 doc/pyblk
 doc/tests
+
+# vim
+*.swp
+
+# archive
+*.tar.gz
+
+# junk files
+junk.*
