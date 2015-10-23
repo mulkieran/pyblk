@@ -84,13 +84,14 @@ class NodeTypes(object):
         """
         return node.attr['nodetype'] == str(node_type)
 
-    @staticmethod
-    def types():
+    @classmethod
+    def types(cls):
         """
         :returns: a list of all ``NodeType`` objects.
         :rtype: list of ``NodeType``
         """
-        return [DevicePath, WWN]
+        return [cls.DEVICE_PATH, cls.WWN]
+
 
 @six.add_metaclass(abc.ABCMeta)
 class EdgeType(object):
