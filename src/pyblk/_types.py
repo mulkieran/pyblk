@@ -85,7 +85,7 @@ class NodeTypes(object):
         return node.attr['nodetype'] == str(node_type)
 
     @staticmethod
-    def types(): # pylint: disable=invalid-name
+    def types():
         """
         :returns: a list of all ``NodeType`` objects.
         :rtype: list of ``NodeType``
