@@ -43,7 +43,6 @@ class UdevProperties(object):
     """
     Find udev properties for the device nodes of a network graph.
     """
-    # pylint: disable=too-few-public-methods
 
     @staticmethod
     def decorated(graph):
