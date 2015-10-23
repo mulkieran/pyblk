@@ -46,6 +46,14 @@ class NodeType(object):
         return self.__class__.__name__
     __repr__ = __str__
 
+    def __deepcopy__(self, memo):
+        # pylint: disable=unused-argument
+        return self
+
+    def __copy__(self):
+        return self
+
+
 class DevicePath(NodeType):
     """
     A device, uniquely identified by its device path.
@@ -128,6 +136,14 @@ class EdgeType(object):
     def __str__(self): # pragma: no cover
         return self.__class__.__name__
     __repr__ = __str__
+
+    def __deepcopy__(self, memo):
+        # pylint: disable=unused-argument
+        return self
+
+    def __copy__(self):
+        return self
+
 
 class Slave(EdgeType):
     """

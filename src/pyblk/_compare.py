@@ -49,7 +49,7 @@ def _node_match(attr1, attr2):
     type1 = attr1['nodetype']
     type2 = attr2['nodetype']
 
-    if type1 != type2:
+    if type1 is not type2:
         return False
 
     return attr1['identifier'] == attr2['identifier']
