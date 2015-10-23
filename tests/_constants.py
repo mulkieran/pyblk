@@ -34,16 +34,16 @@ from __future__ import unicode_literals
 
 import pyudev
 
-from pyblk import _traversal
+import pyblk
 
 CONTEXT = pyudev.Context()
 DEVICES = CONTEXT.list_devices()
 
 # pylint: disable=too-many-function-args
 
-SLAVES = [d for d in DEVICES if list(_traversal.slaves(CONTEXT, d, False))]
+SLAVES = [d for d in DEVICES if list(pyblk.slaves(CONTEXT, d, False))]
 
-HOLDERS = [d for d in DEVICES if list(_traversal.holders(CONTEXT, d, False))]
+HOLDERS = [d for d in DEVICES if list(pyblk.holders(CONTEXT, d, False))]
 
 BOTHS = list(set(SLAVES).intersection(set(HOLDERS)))
 
