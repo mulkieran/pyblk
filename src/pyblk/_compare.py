@@ -32,7 +32,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import networkx as nx
 import networkx.algorithms.isomorphism as iso
+
+from ._decorations import Decorator
+from ._decorations import DifferenceMarkers
 
 
 def _node_match(attr1, attr2):
@@ -83,7 +87,6 @@ class Differences(object):
     """
     Find the differences between two graphs, if they exist.
     """
-    # pylint: disable=too-few-public-methods
 
     @staticmethod
     def node_differences(graph1, graph2):
@@ -100,3 +103,55 @@ class Differences(object):
            graph1.subgraph(n for n in graph1 if not n in graph2),
            graph2.subgraph(n for n in graph2 if not n in graph1)
         )
+
+    @classmethod
+    def full_diff(cls, graph1, graph2):
+        """
+        Return a graph that shows the full difference between graph1 and graph2.
+
+        :param `DiGraph` graph1: a graph
+        :param `DiGraph` graph2: a graph
+        :returns: an annotated graph composed of ``graph1`` and ``graph2``
+        :rtype: DiGraph
+        """
+        (ldiff, rdiff) = cls.node_differences(graph1, graph2)
+        graph = nx.compose(graph1, graph2, name="union")
+        removed = DifferenceMarkers.node_differences(graph, ldiff, "removed")
+        Decorator.decorate(graph, removed)
+        added = DifferenceMarkers.node_differences(graph, rdiff, "added")
+        Decorator.decorate(graph, added)
+        return graph
+
+    @classmethod
+    def left_diff(cls, graph1, graph2):
+        """
+        Return a graph of the left difference between graph1 and graph2.
+
+        :param `DiGraph` graph1: a graph
+        :param `DiGraph` graph2: a graph
+        :returns: ``graph1`` with removed nodes marked
+        :rtype: DiGraph
+        """
+        (ldiff, _) = cls.node_differences(graph1, graph2)
+
+        graph = graph1.copy()
+        removed = DifferenceMarkers.node_differences(graph, ldiff, "removed")
+        Decorator.decorate(graph, removed)
+        return graph
+
+    @classmethod
+    def right_diff(cls, graph1, graph2):
+        """
+        Return a graph of the right difference between graph1 and graph2.
+
+        :param `DiGraph` graph1: a graph
+        :param `DiGraph` graph2: a graph
+        :returns: ``graph2`` with added nodes marked
+        :rtype: DiGraph
+        """
+        (_, rdiff) = cls.node_differences(graph1, graph2)
+
+        graph = graph2.copy()
+        added = DifferenceMarkers.node_differences(graph, rdiff, "added")
+        Decorator.decorate(graph, added)
+        return graph
