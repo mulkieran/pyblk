@@ -43,7 +43,6 @@ class TestGraphWrite(object):
     """
     Test aspects of rewriting graph attributes.
     """
-    # pylint: disable=too-few-public-methods
 
     def test_isomorphic(self):
         """
@@ -56,3 +55,25 @@ class TestGraphWrite(object):
 
         assert nx.is_isomorphic(home_graph, new_graph)
         assert len(home_graph.edges()) == len(new_graph.edges())
+
+    def test_node_identity(self):
+        """
+        Verify that stringize and destringize are inverses on nodetype
+        and that they do not have no effect.
+        """
+        home_graph = pyblk.GenerateGraph.get_graph(CONTEXT, "home")
+        new_graph = home_graph.copy()
+
+        pyblk.Rewriter.stringize(new_graph)
+
+        home_types = nx.get_node_attributes(home_graph, 'nodetype')
+        new_types = nx.get_node_attributes(new_graph, 'nodetype')
+
+        assert home_types != new_types
+
+        pyblk.Rewriter.destringize(new_graph)
+
+        home_types = nx.get_node_attributes(home_graph, 'nodetype')
+        new_types = nx.get_node_attributes(new_graph, 'nodetype')
+
+        assert home_types == new_types
