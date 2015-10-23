@@ -95,6 +95,13 @@ class RewriteGraph(object):
         """
         _write.Rewriter.stringize(graph)
 
+    @staticmethod
+    def deconvert_graph(graph):
+        """
+        Do any necessary graph conversions to a just read graph.
+        """
+        _write.Rewriter.destringize(graph)
+
 
 class DisplayGraph(object):
     """

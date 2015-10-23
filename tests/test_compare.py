@@ -75,7 +75,9 @@ class TestGraphDifference(object):
         nx.write_gml(home_graph, filepath)
 
         graph1 = nx.read_gml(filepath)
+        pyblk.RewriteGraph.deconvert_graph(graph1)
         graph2 = nx.read_gml(filepath)
+        pyblk.RewriteGraph.deconvert_graph(graph2)
 
         (diff1, diff2) = pyblk.Differences.node_differences(graph1, graph2)
         assert len(diff1) == 0 and len(diff2) == 0

@@ -111,6 +111,7 @@ def main():
         sys.exit(parsing_error)
 
     graph = nx.read_gml(args.filename)
+    pyblk.RewriteGraph.deconvert_graph(graph)
 
     if not args.inverse:
         graph = graph.reverse(copy=False)
