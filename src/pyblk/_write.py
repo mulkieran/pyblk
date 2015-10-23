@@ -33,6 +33,9 @@ from __future__ import unicode_literals
 
 import networkx as nx
 
+from ._types import EdgeTypes
+from ._types import NodeTypes
+
 
 class Rewriter(object):
     """
@@ -53,4 +56,19 @@ class Rewriter(object):
         node_types = nx.get_node_attributes(graph, 'nodetype')
         for key, value in node_types.items():
             node_types[key] = str(value)
+        nx.set_node_attributes(graph, 'nodetype', node_types)
+
+    @staticmethod
+    def destringize(graph):
+        """
+        Xform node and edge type strings to objects.
+        """
+        edge_types = nx.get_edge_attributes(graph, 'edgetype')
+        for key, value in edge_types.items():
+            edge_types[key] = EdgeTypes.get_type(value)
+        nx.set_edge_attributes(graph, 'edgetype', edge_types)
+
+        node_types = nx.get_node_attributes(graph, 'nodetype')
+        for key, value in node_types.items():
+            node_types[key] = NodeTypes.get_type(value)
         nx.set_node_attributes(graph, 'nodetype', node_types)
