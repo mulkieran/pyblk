@@ -35,25 +35,11 @@ import abc
 
 import six
 
-@six.add_metaclass(abc.ABCMeta)
-class ElementType(object):
-    """
-    Abstract class that represents an element type.
-    """
-    # pylint: disable=too-few-public-methods
-    def __str__(self): # pragma: no cover
-        return self.__class__.__name__
-    __repr__ = __str__
-
-    def __deepcopy__(self, memo):
-        # pylint: disable=unused-argument
-        return self
-
-    def __copy__(self): # pragma: no cover
-        return self
+from ._metaclasses import AttributeValue
+from ._metaclasses import AttributeValues
 
 @six.add_metaclass(abc.ABCMeta)
-class NodeType(ElementType):
+class NodeType(AttributeValue):
     """
     Abstract class that represents a node type.
     """
@@ -78,32 +64,7 @@ class WWN(NodeType):
 
 WWN = WWN() # pylint: disable=invalid-name
 
-@six.add_metaclass(abc.ABCMeta)
-class GraphEntityTypes(object):
-    """
-    Enumeration of types corresponding to a graph entity.
-    """
-
-    @classmethod
-    @abc.abstractmethod
-    def types(cls):
-        """
-        Return a list of the types in the class.
-        """
-        raise NotImplementedError() # pragma: no cover
-
-    @classmethod
-    def get_type(cls, name):
-        """
-        Return the type object corresponding to ``name``.
-
-        :returns: the type object that matches ``name`` or None
-        :rtype: `NodeType` or NoneType
-        """
-        return next((obj for obj in cls.types() if str(obj) == name), None)
-
-
-class NodeTypes(GraphEntityTypes):
+class NodeTypes(AttributeValues):
     """
     Enumeration of node types.
     """
@@ -112,16 +73,12 @@ class NodeTypes(GraphEntityTypes):
     WWN = WWN
 
     @classmethod
-    def types(cls):
-        """
-        :returns: a list of all ``NodeType`` objects.
-        :rtype: list of ``NodeType``
-        """
+    def values(cls):
         return [cls.DEVICE_PATH, cls.WWN]
 
 
 @six.add_metaclass(abc.ABCMeta)
-class EdgeType(ElementType):
+class EdgeType(AttributeValue):
     """
     Superclass of edge types.
     """
@@ -164,7 +121,7 @@ class Congruence(EdgeType):
 
 Congruence = Congruence() # pylint: disable=invalid-name
 
-class EdgeTypes(GraphEntityTypes):
+class EdgeTypes(AttributeValues):
     """
     Enumeration of edge types.
     """
@@ -175,11 +132,7 @@ class EdgeTypes(GraphEntityTypes):
     CONGRUENCE = Congruence
 
     @classmethod
-    def types(cls):
-        """
-        :returns: a list of all ``EdgeType`` objects.
-        :rtype: list of ``EdgeType``
-        """
+    def values(cls):
         return [
            cls.CONGRUENCE,
            cls.PARTITION,

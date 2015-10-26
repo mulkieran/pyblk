@@ -18,10 +18,10 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    pyblk._write
-    ============
+    pyblk._metaclasses
+    ==================
 
-    Tools to write out a graph.
+    Metaclasses for graph attributes.
 
     .. moduleauthor::  mulhern <amulhern@redhat.com>
 """
@@ -31,44 +31,47 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import networkx as nx
+import abc
 
-from ._attributes import EdgeTypes
-from ._attributes import NodeTypes
+import six
 
-
-class Rewriter(object):
+@six.add_metaclass(abc.ABCMeta)
+class AttributeValue(object):
     """
-    Rewrite graph for output.
+    Abstract class that represents some attribute constant.
     """
     # pylint: disable=too-few-public-methods
+    def __str__(self): # pragma: no cover
+        return self.__class__.__name__
+    __repr__ = __str__
 
-    @staticmethod
-    def stringize(graph):
-        """
-        Xform node and edge types to strings.
-        """
-        edge_types = nx.get_edge_attributes(graph, 'edgetype')
-        for key, value in edge_types.items():
-            edge_types[key] = str(value)
-        nx.set_edge_attributes(graph, 'edgetype', edge_types)
+    def __deepcopy__(self, memo):
+        # pylint: disable=unused-argument
+        return self
 
-        node_types = nx.get_node_attributes(graph, 'nodetype')
-        for key, value in node_types.items():
-            node_types[key] = str(value)
-        nx.set_node_attributes(graph, 'nodetype', node_types)
+    def __copy__(self): # pragma: no cover
+        return self
 
-    @staticmethod
-    def destringize(graph):
-        """
-        Xform node and edge type strings to objects.
-        """
-        edge_types = nx.get_edge_attributes(graph, 'edgetype')
-        for key, value in edge_types.items():
-            edge_types[key] = EdgeTypes.get_value(value)
-        nx.set_edge_attributes(graph, 'edgetype', edge_types)
+@six.add_metaclass(abc.ABCMeta)
+class AttributeValues(object):
+    """
+    Some set of values for a graph attribute.
+    """
 
-        node_types = nx.get_node_attributes(graph, 'nodetype')
-        for key, value in node_types.items():
-            node_types[key] = NodeTypes.get_value(value)
-        nx.set_node_attributes(graph, 'nodetype', node_types)
+    @classmethod
+    @abc.abstractmethod
+    def values(cls):
+        """
+        Return a list of the values in the class.
+        """
+        raise NotImplementedError() # pragma: no cover
+
+    @classmethod
+    def get_value(cls, name):
+        """
+        Return the object corresponding to ``name``.
+
+        :returns: the type object that matches ``name`` or None
+        :rtype: `NodeType` or NoneType
+        """
+        return next((obj for obj in cls.values() if str(obj) == name), None)
