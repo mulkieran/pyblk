@@ -38,8 +38,8 @@ from functools import reduce # pylint: disable=redefined-builtin
 
 import six
 
-from ._types import EdgeTypes
-from ._types import NodeTypes
+from ._attributes import EdgeTypes
+from ._attributes import NodeTypes
 
 class HTMLUtils(object):
     """

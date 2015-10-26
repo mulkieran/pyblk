@@ -38,8 +38,8 @@ import networkx as nx
 
 from . import _traversal
 
-from ._types import EdgeTypes
-from ._types import NodeTypes
+from ._attributes import EdgeTypes
+from ._attributes import NodeTypes
 
 SysfsTraversalConfig = namedtuple(
    'SysfsTraversalConfig',

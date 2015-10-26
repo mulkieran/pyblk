@@ -36,7 +36,7 @@ import networkx as nx
 
 import pyudev
 
-from ._types import NodeTypes
+from ._attributes import NodeTypes
 
 
 class UdevProperties(object):

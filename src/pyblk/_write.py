@@ -33,8 +33,8 @@ from __future__ import unicode_literals
 
 import networkx as nx
 
-from ._types import EdgeTypes
-from ._types import NodeTypes
+from ._attributes import EdgeTypes
+from ._attributes import NodeTypes
 
 
 class Rewriter(object):
