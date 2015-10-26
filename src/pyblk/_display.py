@@ -76,7 +76,6 @@ class Utils(object):
     """
     General utilities for graph transformations.
     """
-    # pylint: disable=too-few-public-methods
 
     @staticmethod
     def copy_attr(attr):
@@ -114,6 +113,29 @@ class Utils(object):
            eval(res) # pylint: disable=eval-used
         )
 
+    @staticmethod
+    def is_node_type(node, node_type):
+        """
+        Whether ``node`` has type ``node_type``.
+
+        :param `agraph.Edge` node: the node
+        :param `EdgeType` node_type: an node type
+        :returns: True if ``node`` has type ``node_type``, otherwise False
+        :rtype: bool
+        """
+        return node.attr['nodetype'] == str(node_type)
+
+    @staticmethod
+    def is_edge_type(edge, edge_type):
+        """
+        Whether ``edge`` has type ``edge_type``.
+
+        :param `agraph.Edge` edge: the edge
+        :param `EdgeType` edge_type: an edge type
+        :returns: True if ``edge`` has type ``edge_type``, otherwise False
+        :rtype: bool
+        """
+        return edge.attr['edgetype'] == str(edge_type)
 
 @six.add_metaclass(abc.ABCMeta)
 class GraphTransformer(object):
@@ -175,7 +197,7 @@ class PartitionTransformer(GraphTransformer):
     @classmethod
     def objects(cls, graph):
         return (n for n in graph.iternodes() if \
-           NodeTypes.is_type(n, NodeTypes.DEVICE_PATH) and \
+           Utils.is_node_type(n, NodeTypes.DEVICE_PATH) and \
            Utils.get_attr(n, ['UDEV', 'DEVTYPE']) == 'partition')
 
 
@@ -190,7 +212,7 @@ class PartitionedDiskTransformer(GraphTransformer):
     @staticmethod
     def xform_object(graph, obj):
         partition_edges = [e for e in graph.out_edges(obj) if \
-           EdgeTypes.is_type(e, EdgeTypes.PARTITION)]
+           Utils.is_edge_type(e, EdgeTypes.PARTITION)]
 
         # If there are no partitions in this disk, do nothing
         if not partition_edges:
@@ -232,7 +254,7 @@ class PartitionedDiskTransformer(GraphTransformer):
     @classmethod
     def objects(cls, graph):
         return (n for n in graph.iternodes() if \
-           NodeTypes.is_type(n, NodeTypes.DEVICE_PATH) and \
+           Utils.is_node_type(n, NodeTypes.DEVICE_PATH) and \
            Utils.get_attr(n, ['UDEV', 'DEVTYPE']) == 'disk')
 
 
@@ -248,7 +270,7 @@ class SpindleTransformer(GraphTransformer):
     @classmethod
     def objects(cls, graph):
         return [n for n in graph.iternodes() if \
-           NodeTypes.is_type(n, NodeTypes.WWN)]
+           Utils.is_node_type(n, NodeTypes.WWN)]
 
 
 class PartitionEdgeTransformer(GraphTransformer):
@@ -263,7 +285,7 @@ class PartitionEdgeTransformer(GraphTransformer):
     @classmethod
     def objects(cls, graph):
         return (e for e in graph.iteredges() if \
-           EdgeTypes.is_type(e, EdgeTypes.PARTITION))
+           Utils.is_edge_type(e, EdgeTypes.PARTITION))
 
 
 class CongruenceEdgeTransformer(GraphTransformer):
@@ -278,7 +300,7 @@ class CongruenceEdgeTransformer(GraphTransformer):
     @classmethod
     def objects(cls, graph):
         return (e for e in graph.iteredges() if \
-           EdgeTypes.is_type(e, EdgeTypes.CONGRUENCE))
+           Utils.is_edge_type(e, EdgeTypes.CONGRUENCE))
 
 
 class GraphTransformers(object):

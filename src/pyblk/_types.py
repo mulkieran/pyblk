@@ -111,18 +111,6 @@ class NodeTypes(GraphEntityTypes):
     DEVICE_PATH = DevicePath
     WWN = WWN
 
-    @staticmethod
-    def is_type(node, node_type):
-        """
-        Whether ``node`` has type ``node_type``.
-
-        :param `agraph.Edge` node: the node
-        :param `EdgeType` node_type: an node type
-        :returns: True if ``node`` has type ``node_type``, otherwise False
-        :rtype: bool
-        """
-        return node.attr['nodetype'] == str(node_type)
-
     @classmethod
     def types(cls):
         """
@@ -185,18 +173,6 @@ class EdgeTypes(GraphEntityTypes):
     PARTITION = Partition
     SPINDLE = Spindle
     CONGRUENCE = Congruence
-
-    @staticmethod
-    def is_type(edge, edge_type):
-        """
-        Whether ``edge`` has type ``edge_type``.
-
-        :param `agraph.Edge` edge: the edge
-        :param `EdgeType` edge_type: an edge type
-        :returns: True if ``edge`` has type ``edge_type``, otherwise False
-        :rtype: bool
-        """
-        return edge.attr['edgetype'] == str(edge_type)
 
     @classmethod
     def types(cls):
