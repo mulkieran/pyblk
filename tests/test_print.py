@@ -47,7 +47,7 @@ class TestGraphPrint(object):
         """
         Verify that the number of strings is at least a node's out-degree.
         """
-        node = GRAPH.nodes()[0]
+        node = max(GRAPH.nodes(), key=GRAPH.out_degree)
         lines = pyblk.Print.node_strings(
            lambda x, y=None: ["a node"],
            "{0}",
