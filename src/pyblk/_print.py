@@ -31,6 +31,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import networkx as nx
+
+from ._attributes import DiffStatuses
+
 
 class Print(object):
     """
@@ -100,3 +104,53 @@ class Print(object):
             )
             for line in lines:
                 yield line
+
+
+class LineInfo(object):
+    """
+    Class that generates information for a single line.
+    """
+    # pylint: disable=too-few-public-methods
+
+    @staticmethod
+    def info_func(graph):
+        """
+        Get function that obtains information for a single line.
+
+        :param `DiGraph` graph: the graph
+        :return: a function that calculates information for a single node
+        :rtype: a function
+        """
+        key_map = nx.get_node_attributes(graph, 'identifier')
+        udev_map = nx.get_node_attributes(graph, 'UDEV')
+        diffstatus_map = nx.get_node_attributes(graph, 'diffstatus')
+
+        def the_func(node, indices=None):
+            """
+            Function to generate information to be printed for ``node``.
+
+            :param `Node` node: the node
+            :param indices: list of numeric indices for values or None
+            :type indices: list of int or NoneType
+            :returns: a list of informational strings
+            :rtype: list of str
+
+            Only values for elements at x in indices are calculated.
+            If indices is None, return an item for every index.
+            If indices is the empty list, return an empty list.
+            """
+            if indices == []:
+                return []
+
+            udev_info = udev_map.get(node)
+            devname = udev_info and udev_info.get('DEVNAME')
+            diffstatus = diffstatus_map.get(node)
+            name = devname or key_map[node]
+            if diffstatus is not None:
+                if diffstatus is DiffStatuses.ADDED:
+                    name = "<<%s>>" % name
+                elif diffstatus is DiffStatuses.REMOVED:
+                    name = ">>%s<<" % name
+            return [name]
+
+        return the_func
