@@ -33,6 +33,7 @@ from __future__ import unicode_literals
 
 import networkx as nx
 
+from ._attributes import DiffStatuses
 from ._attributes import EdgeTypes
 from ._attributes import NodeTypes
 
@@ -58,6 +59,11 @@ class Rewriter(object):
             node_types[key] = str(value)
         nx.set_node_attributes(graph, 'nodetype', node_types)
 
+        node_types = nx.get_node_attributes(graph, 'diffstatus')
+        for key, value in node_types.items():
+            node_types[key] = str(value)
+        nx.set_node_attributes(graph, 'diffstatus', node_types)
+
     @staticmethod
     def destringize(graph):
         """
@@ -72,3 +78,8 @@ class Rewriter(object):
         for key, value in node_types.items():
             node_types[key] = NodeTypes.get_value(value)
         nx.set_node_attributes(graph, 'nodetype', node_types)
+
+        node_types = nx.get_node_attributes(graph, 'diffstatus')
+        for key, value in node_types.items():
+            node_types[key] = DiffStatuses.get_value(value)
+        nx.set_node_attributes(graph, 'diffstatus', node_types)

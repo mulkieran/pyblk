@@ -25,5 +25,6 @@
 
     .. moduleauthor::  Anne Mulhern  <amulhern@redhat.com>
 """
+from ._diffstatus import DiffStatuses
 from ._types import EdgeTypes
 from ._types import NodeTypes

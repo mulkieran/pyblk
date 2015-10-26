@@ -33,6 +33,8 @@ from __future__ import unicode_literals
 
 import networkx as nx
 
+from ._attributes import DiffStatuses
+
 from ._decorations import Decorator
 from ._decorations import UdevProperties
 
@@ -124,11 +126,12 @@ class DisplayGraph(object):
         dot_graph.layout(prog="dot")
 
         xformers = [
-           _display.PartitionedDiskTransformer,
            _display.SpindleTransformer,
            _display.PartitionTransformer,
            _display.PartitionEdgeTransformer,
-           _display.CongruenceEdgeTransformer
+           _display.CongruenceEdgeTransformer,
+           _display.AddedNodeTransformer,
+           _display.RemovedNodeTransformer
         ]
 
         _display.GraphTransformers.xform(dot_graph, xformers)
@@ -174,9 +177,9 @@ class PrintGraph(object):
             diffstatus = diffstatus_map.get(node)
             name = devname or key_map[node]
             if diffstatus is not None:
-                if diffstatus == "added":
+                if diffstatus is DiffStatuses.ADDED:
                     name = "<<%s>>" % name
-                elif diffstatus == "removed":
+                elif diffstatus is DiffStatuses.REMOVED:
                     name = ">>%s<<" % name
             return [name]
 

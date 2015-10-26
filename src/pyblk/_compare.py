@@ -35,6 +35,8 @@ from __future__ import unicode_literals
 import networkx as nx
 import networkx.algorithms.isomorphism as iso
 
+from ._attributes import DiffStatuses
+
 from ._decorations import Decorator
 from ._decorations import DifferenceMarkers
 
@@ -116,9 +118,17 @@ class Differences(object):
         """
         (ldiff, rdiff) = cls.node_differences(graph1, graph2)
         graph = nx.compose(graph1, graph2, name="union")
-        removed = DifferenceMarkers.node_differences(graph, ldiff, "removed")
+        removed = DifferenceMarkers.node_differences(
+           graph,
+           ldiff,
+           DiffStatuses.REMOVED
+        )
         Decorator.decorate(graph, removed)
-        added = DifferenceMarkers.node_differences(graph, rdiff, "added")
+        added = DifferenceMarkers.node_differences(
+           graph,
+           rdiff,
+           DiffStatuses.ADDED
+        )
         Decorator.decorate(graph, added)
         return graph
 
@@ -135,7 +145,11 @@ class Differences(object):
         (ldiff, _) = cls.node_differences(graph1, graph2)
 
         graph = graph1.copy()
-        removed = DifferenceMarkers.node_differences(graph, ldiff, "removed")
+        removed = DifferenceMarkers.node_differences(
+           graph,
+           ldiff,
+           DiffStatuses.REMOVED
+        )
         Decorator.decorate(graph, removed)
         return graph
 
@@ -152,6 +166,10 @@ class Differences(object):
         (_, rdiff) = cls.node_differences(graph1, graph2)
 
         graph = graph2.copy()
-        added = DifferenceMarkers.node_differences(graph, rdiff, "added")
+        added = DifferenceMarkers.node_differences(
+           graph,
+           rdiff,
+           DiffStatuses.ADDED
+        )
         Decorator.decorate(graph, added)
         return graph

@@ -38,6 +38,7 @@ from functools import reduce # pylint: disable=redefined-builtin
 
 import six
 
+from ._attributes import DiffStatuses
 from ._attributes import EdgeTypes
 from ._attributes import NodeTypes
 
@@ -136,6 +137,18 @@ class Utils(object):
         :rtype: bool
         """
         return edge.attr['edgetype'] == str(edge_type)
+
+    @staticmethod
+    def is_diff_status(ele, diff_status):
+        """
+        Whether ``ele`` has diff status ``diff_status``.
+
+        :param ele: the graph element
+        :type edge: `agraph.Edge` or `agraph.Node`
+        :returns: True if ``ele`` has status ``diff_status``, otherwise False
+        :rtype: bool
+        """
+        return ele.attr['diffstatus'] == str(diff_status)
 
 @six.add_metaclass(abc.ABCMeta)
 class GraphTransformer(object):
@@ -301,6 +314,36 @@ class CongruenceEdgeTransformer(GraphTransformer):
     def objects(cls, graph):
         return (e for e in graph.iteredges() if \
            Utils.is_edge_type(e, EdgeTypes.CONGRUENCE))
+
+
+class RemovedNodeTransformer(GraphTransformer):
+    """
+    Decorate removed nodes.
+    """
+
+    @staticmethod
+    def xform_object(graph, obj):
+        obj.attr['style'] = 'dashed'
+
+    @classmethod
+    def objects(cls, graph):
+        return (e for e in graph.iternodes() if \
+           Utils.is_diff_status(e, DiffStatuses.REMOVED))
+
+
+class AddedNodeTransformer(GraphTransformer):
+    """
+    Decorate added nodes.
+    """
+
+    @staticmethod
+    def xform_object(graph, obj):
+        obj.attr['style'] = 'bold'
+
+    @classmethod
+    def objects(cls, graph):
+        return (e for e in graph.iternodes() if \
+           Utils.is_diff_status(e, DiffStatuses.ADDED))
 
 
 class GraphTransformers(object):

@@ -87,20 +87,26 @@ class TestGraphDifference(object):
         full_diff = pyblk.Differences.full_diff(graph1, graph2)
         assert pyblk.Compare.is_equivalent(full_diff, graph1)
         statuses = nx.get_node_attributes(full_diff, "diffstatus")
-        assert not any(statuses[k] == "removed" for k in statuses)
-        assert not any(statuses[k] == "added" for k in statuses)
+        assert not any(statuses[k] is pyblk.DiffStatuses.REMOVED \
+           for k in statuses)
+        assert not any(statuses[k] is pyblk.DiffStatuses.ADDED \
+           for k in statuses)
 
         left_diff = pyblk.Differences.left_diff(graph1, graph2)
         assert pyblk.Compare.is_equivalent(left_diff, graph1)
         statuses = nx.get_node_attributes(left_diff, "diffstatus")
-        assert not any(statuses[k] == "removed" for k in statuses)
-        assert not any(statuses[k] == "added" for k in statuses)
+        assert not any(statuses[k] is pyblk.DiffStatuses.REMOVED \
+           for k in statuses)
+        assert not any(statuses[k] is pyblk.DiffStatuses.ADDED \
+           for k in statuses)
 
         right_diff = pyblk.Differences.right_diff(graph1, graph2)
         assert pyblk.Compare.is_equivalent(right_diff, graph1)
         statuses = nx.get_node_attributes(right_diff, "diffstatus")
-        assert not any(statuses[k] == "removed" for k in statuses)
-        assert not any(statuses[k] == "added" for k in statuses)
+        assert not any(statuses[k] is pyblk.DiffStatuses.REMOVED \
+           for k in statuses)
+        assert not any(statuses[k] is pyblk.DiffStatuses.ADDED \
+           for k in statuses)
 
     def test_empty(self):
         """
@@ -115,17 +121,17 @@ class TestGraphDifference(object):
 
         full_diff = pyblk.Differences.full_diff(GRAPH, empty_graph)
         statuses = nx.get_node_attributes(full_diff, "diffstatus")
-        assert all(statuses[k] == "removed" for k in statuses)
+        assert all(statuses[k] is pyblk.DiffStatuses.REMOVED for k in statuses)
         assert len(statuses) == len(GRAPH)
 
         full_diff = pyblk.Differences.full_diff(empty_graph, GRAPH)
         statuses = nx.get_node_attributes(full_diff, "diffstatus")
-        assert all(statuses[k] == "added" for k in statuses)
+        assert all(statuses[k] is pyblk.DiffStatuses.ADDED for k in statuses)
         assert len(statuses) == len(GRAPH)
 
         left_diff = pyblk.Differences.left_diff(GRAPH, empty_graph)
         statuses = nx.get_node_attributes(left_diff, "diffstatus")
-        assert all(statuses[k] == "removed" for k in statuses)
+        assert all(statuses[k] is pyblk.DiffStatuses.REMOVED for k in statuses)
         assert len(statuses) == len(GRAPH)
 
         left_diff = pyblk.Differences.left_diff(empty_graph, GRAPH)
@@ -133,7 +139,7 @@ class TestGraphDifference(object):
 
         right_diff = pyblk.Differences.right_diff(empty_graph, GRAPH)
         statuses = nx.get_node_attributes(right_diff, "diffstatus")
-        assert all(statuses[k] == "added" for k in statuses)
+        assert all(statuses[k] is pyblk.DiffStatuses.ADDED for k in statuses)
         assert len(statuses) == len(GRAPH)
 
         right_diff = pyblk.Differences.right_diff(GRAPH, empty_graph)
