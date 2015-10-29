@@ -79,23 +79,6 @@ def get_parser():
     )
     return parser
 
-def do_diff(graph1, graph2, diff):
-    """
-    Generate the appropriate graph.
-
-    :param `DiGraph` graph1: a graph
-    :param `DiGraph` graph2: a graph
-    :param str diff: the diff to perform
-    """
-    if diff == "full":
-        return pyblk.Differences.full_diff(graph1, graph2)
-    elif diff == "left":
-        return pyblk.Differences.left_diff(graph1, graph2)
-    elif diff == "right":
-        return pyblk.Differences.right_diff(graph1, graph2)
-    else:
-        assert False
-
 def do_action(graph, action, out):
     """
     Do the action.
@@ -131,7 +114,7 @@ def main():
     graph2 = nx.read_gml(args.path2)
     pyblk.RewriteGraph.deconvert_graph(graph2)
 
-    graph = do_diff(graph1, graph2, args.diff)
+    graph = pyblk.DiffGraph.do_diff(graph1, graph2, args.diff)
 
     if not args.inverse:
         graph = graph.reverse(copy=False)

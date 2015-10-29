@@ -29,6 +29,7 @@ from ._attributes import DiffStatuses
 from ._attributes import EdgeTypes
 from ._attributes import NodeTypes
 
+from ._graphs import DiffGraph
 from ._graphs import DisplayGraph
 from ._graphs import GenerateGraph
 from ._graphs import PrintGraph

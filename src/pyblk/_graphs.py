@@ -36,6 +36,7 @@ import networkx as nx
 from ._decorations import Decorator
 from ._decorations import UdevProperties
 
+from . import _compare
 from . import _display
 from . import _print
 from . import _structure
@@ -168,3 +169,28 @@ class PrintGraph(object):
             )
             for line in lines:
                 print(line, end="\n", file=out)
+
+
+class DiffGraph(object):
+    """
+    Take the difference of two graphs.
+    """
+    # pylint: disable=too-few-public-methods
+
+    @staticmethod
+    def do_diff(graph1, graph2, diff):
+        """
+        Generate the appropriate graph.
+
+        :param `DiGraph` graph1: a graph
+        :param `DiGraph` graph2: a graph
+        :param str diff: the diff to perform
+        """
+        if diff == "full":
+            return _compare.Differences.full_diff(graph1, graph2)
+        elif diff == "left":
+            return _compare.Differences.left_diff(graph1, graph2)
+        elif diff == "right":
+            return _compare.Differences.right_diff(graph1, graph2)
+        else:
+            assert False
