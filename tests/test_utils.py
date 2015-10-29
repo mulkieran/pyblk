@@ -32,6 +32,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import networkx as nx
+
 import pyblk
 
 from ._constants import GRAPH
@@ -50,3 +52,10 @@ class TestGraphUtils(object):
         in_degrees = GRAPH.in_degree(roots)
 
         assert all(in_degrees[r] == 0 for r in roots)
+
+    def test_as_string(self):
+        """
+        Verify non-empty string.
+        """
+        graph = GRAPH.copy()
+        assert pyblk.GraphUtils.as_string(graph, nx.write_gml)

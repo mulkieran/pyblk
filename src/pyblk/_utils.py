@@ -31,7 +31,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import io
+
 import networkx as nx
+
+from . import _write
 
 
 class GraphUtils(object):
@@ -51,3 +55,19 @@ class GraphUtils(object):
         :rtype: list of `Node`
         """
         return [n for n in graph if not nx.ancestors(graph, n)]
+
+    @staticmethod
+    def as_string(graph, write_func):
+        """
+        Return the entire graph as a single string in a structured format.
+
+        :param `DiGraph` graph: the graph
+        :param write_func: the function to write the graph
+        :type write_func: `DiGraph` * file -> NoneType
+        :returns: the graph as a stringlike thing
+        """
+        _write.Rewriter.stringize(graph)
+
+        output = io.BytesIO()
+        write_func(graph, output)
+        return output.getvalue()
