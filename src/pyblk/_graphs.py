@@ -152,16 +152,14 @@ class SimpleLineInfo(_print.LineInfo):
         self.udev_map = nx.get_node_attributes(graph, 'UDEV')
         self.diffstatus_map = nx.get_node_attributes(graph, 'diffstatus')
 
-    @classmethod
-    def max_index(cls):
-        return 0
+    supported_keys = ['NAME']
 
-    def _func_0(self, node):
+    def _func_name(self, node):
         """
-        Calculates the field at the 0th index.
+        Calculates the field for key NAME.
 
         :param `Node` node: the node
-        :returns: the value to display at the 0th index for ``node``.
+        :returns: the value to display for ``node`` for key 'NAME'.
         :rtype: str
         """
         udev_info = self.udev_map.get(node)
@@ -176,9 +174,9 @@ class SimpleLineInfo(_print.LineInfo):
         return name
 
     def func_table(self, index):
-        if index == 0:
-            return self._func_0
-        return None
+        if index == 'NAME':
+            return self._func_name
+        return lambda x: None
 
 class PrintGraph(object):
     """
@@ -198,13 +196,14 @@ class PrintGraph(object):
 
         roots = sorted(
            _utils.GraphUtils.get_roots(graph),
-           key=lambda n: line_info.info(n)[0]
+           key=lambda n: line_info.info(n)['NAME']
         )
 
         for root in roots:
             lines = _print.Print.node_strings(
                line_info.info,
-               '{0}',
+               lambda x: x['NAME'],
+               'NAME',
                graph,
                True,
                0,

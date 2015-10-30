@@ -37,20 +37,44 @@ import pyblk
 from ._constants import GRAPH
 
 
+class SimpleLineInfo(pyblk.LineInfo):
+    """
+    Very simple line info class.
+    """
+
+    supported_keys = ['NAME']
+
+    def _func_name(self, node):
+        # pylint: disable=unused-argument
+        """
+        A very simple function.
+
+        :param node: a node
+        """
+        return 'a node'
+
+    def func_table(self, key):
+        if key == 'NAME':
+            return self._func_name
+        return lambda x: None
+
 class TestGraphPrint(object):
     """
     Test aspects of string representation of graphs.
     """
     # pylint: disable=too-few-public-methods
 
+
     def test_num_string(self):
         """
         Verify that the number of strings is at least a node's out-degree.
         """
         node = max(GRAPH.nodes(), key=GRAPH.out_degree)
+        line_info = SimpleLineInfo()
         lines = pyblk.Print.node_strings(
-           lambda x, y=None: ["a node"],
-           "{0}",
+           line_info.info,
+           lambda d: d['NAME'],
+           'NAME',
            GRAPH,
            True,
            0,

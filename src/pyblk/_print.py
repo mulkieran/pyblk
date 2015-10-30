@@ -54,12 +54,12 @@ class Print(object):
         return len(cls._EDGE_STR)
 
     @classmethod
-    def node_string(cls, info_func, fmt, orphan, indent, node):
+    def node_string(cls, info_func, fmt_func, orphan, indent, node):
         """
         Get a string corresponding to the node.
 
         :param info_func: a function that yields information about the node
-        :param fmt: a function that helps format the info
+        :param fmt_func: a function that helps format the info
         :param bool orphan: True if this node has no parents, otherwise False
         :param int indent: start printing after ``indent`` spaces
         :param `Node` node: the node to print
@@ -70,33 +70,44 @@ class Print(object):
         # pylint: disable=too-many-arguments
         return (" " * indent) + \
            ("" if orphan else cls._EDGE_STR) + \
-           fmt.format(*info_func(node))
+           fmt_func(info_func(node))
 
     @classmethod
-    def node_strings(cls, info_func, fmt, graph, orphan, indent, node):
+    def node_strings(
+       cls,
+       info_func,
+       fmt_func,
+       sort_key,
+       graph,
+       orphan,
+       indent,
+       node
+    ):
         """
         Print nodes reachable from ``node`` including itself.
 
         :param `file` out: the output stream to print to
         :param info_func: a function that yields information about a node
-        :param fmt: a function that helps format the info
+        :param fmt_func: a function that helps format the info
+        :param str sort_key: key to sort on
         :param `DiGraph` graph: the graph
         :param bool orphan: True if this node has no parents, otherwise False
         :param int indent: start printing after ``indent`` spaces
         :param `Node` node: the node to print
         """
         # pylint: disable=too-many-arguments
-        yield cls.node_string(info_func, fmt, orphan, indent, node)
+        yield cls.node_string(info_func, fmt_func, orphan, indent, node)
 
 
         successors = sorted(
            graph.successors(node),
-           key=lambda x: info_func(x, [0])[0]
+           key=lambda x: info_func(x, [sort_key])[sort_key]
         )
         for succ in successors:
             lines = cls.node_strings(
                info_func,
-               fmt,
+               fmt_func,
+               sort_key,
                graph,
                False,
                indent if orphan else indent + cls.indentation(),
@@ -113,43 +124,36 @@ class LineInfo(object):
     single line.
     """
 
-    @classmethod
-    @abc.abstractmethod
-    def max_index(cls):
-        """
-        The maximum index that this info class supports.
-
-        :returns: the maximum index
-        :rtype: int
-        """
-        raise NotImplementedError()
+    supported_keys = abc.abstractproperty(
+       doc="the keys this class supports"
+    )
 
     @abc.abstractmethod
-    def func_table(self, index):
+    def func_table(self, key): # pragma: no cover
         """
         Calculate the function for a particular index.
 
-        :returns: a function to apply to a node for ``index`` or None
-        :rtype: `Node` -> str or NoneType
+        :param str key: the key
+        :returns: a function to apply to a node for ``key``
+        :rtype: `Node` -> str or `Node` -> NoneType
         """
         raise NotImplementedError()
 
-    def info(self, node, indices=None):
+    def info(self, node, keys=None):
         """
         Function to generate information to be printed for ``node``.
 
         :param `Node` node: the node
-        :param indices: list of numeric indices for values or None
-        :type indices: list of int or NoneType
-        :returns: a list of informational strings
-        :rtype: list of str
+        :param keys: list of keys for values or None
+        :type keys: list of str or NoneType
+        :returns: a mapping of keys to values
+        :rtype: dict of str * str
 
-        Only values for elements at x in indices are calculated.
-        If indices is None, return an item for every index.
-        If indices is the empty list, return an empty list.
-        Return None for index in indices that can not be satisfied.
+        Only values for elements at x in keys are calculated.
+        If keys is None, return an item for every index.
+        If keys is the empty list, return an empty dict.
+        Return None for key in keys that can not be satisfied.
         """
-        if indices is None:
-            indices = list(range(self.max_index() + 1))
-        funcs = (self.func_table(index) for index in indices)
-        return [func and func(node) for func in funcs]
+        if keys is None:
+            keys = self.supported_keys
+        return dict((k, self.func_table(k)(node)) for k in keys)
