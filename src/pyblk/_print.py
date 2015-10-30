@@ -31,9 +31,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import networkx as nx
+import abc
 
-from ._attributes import DiffStatuses
+import six
 
 
 class Print(object):
@@ -106,51 +106,50 @@ class Print(object):
                 yield line
 
 
+@six.add_metaclass(abc.ABCMeta)
 class LineInfo(object):
     """
-    Class that generates information for a single line.
+    Abstract parent class of classes that generate information for a
+    single line.
     """
-    # pylint: disable=too-few-public-methods
 
-    @staticmethod
-    def info_func(graph):
+    @classmethod
+    @abc.abstractmethod
+    def max_index(cls):
         """
-        Get function that obtains information for a single line.
+        The maximum index that this info class supports.
 
-        :param `DiGraph` graph: the graph
-        :return: a function that calculates information for a single node
-        :rtype: a function
+        :returns: the maximum index
+        :rtype: int
         """
-        key_map = nx.get_node_attributes(graph, 'identifier')
-        udev_map = nx.get_node_attributes(graph, 'UDEV')
-        diffstatus_map = nx.get_node_attributes(graph, 'diffstatus')
+        raise NotImplementedError()
 
-        def the_func(node, indices=None):
-            """
-            Function to generate information to be printed for ``node``.
+    @abc.abstractmethod
+    def func_table(self, index):
+        """
+        Calculate the function for a particular index.
 
-            :param `Node` node: the node
-            :param indices: list of numeric indices for values or None
-            :type indices: list of int or NoneType
-            :returns: a list of informational strings
-            :rtype: list of str
+        :returns: a function to apply to a node for ``index`` or None
+        :rtype: `Node` -> str or NoneType
+        """
+        raise NotImplementedError()
 
-            Only values for elements at x in indices are calculated.
-            If indices is None, return an item for every index.
-            If indices is the empty list, return an empty list.
-            """
-            if indices == []:
-                return []
+    def info(self, node, indices=None):
+        """
+        Function to generate information to be printed for ``node``.
 
-            udev_info = udev_map.get(node)
-            devname = udev_info and udev_info.get('DEVNAME')
-            diffstatus = diffstatus_map.get(node)
-            name = devname or key_map[node]
-            if diffstatus is not None:
-                if diffstatus is DiffStatuses.ADDED:
-                    name = "<<%s>>" % name
-                elif diffstatus is DiffStatuses.REMOVED:
-                    name = ">>%s<<" % name
-            return [name]
+        :param `Node` node: the node
+        :param indices: list of numeric indices for values or None
+        :type indices: list of int or NoneType
+        :returns: a list of informational strings
+        :rtype: list of str
 
-        return the_func
+        Only values for elements at x in indices are calculated.
+        If indices is None, return an item for every index.
+        If indices is the empty list, return an empty list.
+        Return None for index in indices that can not be satisfied.
+        """
+        if indices is None:
+            indices = list(range(self.max_index() + 1))
+        funcs = (self.func_table(index) for index in indices)
+        return [func and func(node) for func in funcs]

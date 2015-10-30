@@ -36,6 +36,7 @@ import networkx as nx
 from ._decorations import Decorator
 from ._decorations import UdevProperties
 
+from . import _attributes
 from . import _compare
 from . import _display
 from . import _print
@@ -136,6 +137,48 @@ class DisplayGraph(object):
         _display.GraphTransformers.xform(dot_graph, xformers)
         return dot_graph
 
+class SimpleLineInfo(_print.LineInfo):
+    """
+    This class just generates the name by which the device is displayed.
+    """
+
+    def __init__(self, graph):
+        """
+        Constructor.
+
+        :param `DiGraph` graph: the graph
+        """
+        self.key_map = nx.get_node_attributes(graph, 'identifier')
+        self.udev_map = nx.get_node_attributes(graph, 'UDEV')
+        self.diffstatus_map = nx.get_node_attributes(graph, 'diffstatus')
+
+    @classmethod
+    def max_index(cls):
+        return 0
+
+    def _func_0(self, node):
+        """
+        Calculates the field at the 0th index.
+
+        :param `Node` node: the node
+        :returns: the value to display at the 0th index for ``node``.
+        :rtype: str
+        """
+        udev_info = self.udev_map.get(node)
+        devname = udev_info and udev_info.get('DEVNAME')
+        diffstatus = self.diffstatus_map.get(node)
+        name = devname or self.key_map[node]
+        if diffstatus is not None:
+            if diffstatus is _attributes.DiffStatuses.ADDED:
+                name = "<<%s>>" % name
+            elif diffstatus is _attributes.DiffStatuses.REMOVED:
+                name = ">>%s<<" % name
+        return name
+
+    def func_table(self, index):
+        if index == 0:
+            return self._func_0
+        return None
 
 class PrintGraph(object):
     """
@@ -151,16 +194,16 @@ class PrintGraph(object):
         :param `file` out: print destination
         :param `DiGraph` graph: the graph
         """
-        info_func = _print.LineInfo.info_func(graph)
+        line_info = SimpleLineInfo(graph)
 
         roots = sorted(
            _utils.GraphUtils.get_roots(graph),
-           key=lambda n: info_func(n)[0]
+           key=lambda n: line_info.info(n)[0]
         )
 
         for root in roots:
             lines = _print.Print.node_strings(
-               info_func,
+               line_info.info,
                '{0}',
                graph,
                True,

@@ -42,6 +42,7 @@ from ._decorations import UdevProperties
 from ._compare import Compare
 from ._compare import Differences
 
+from ._print import LineInfo
 from ._print import Print
 
 from ._structure import DMPartitionGraphs
