@@ -89,7 +89,7 @@ class TestNodeDecorating(object):
     """
     # pylint: disable=too-few-public-methods
 
-    def test_decorating(self):
+    def test_decorating_nodes(self):
         """
         Test that decorating actually sets the proper value.
         """
@@ -97,7 +97,7 @@ class TestNodeDecorating(object):
         properties = {
            "dummy": dict((n, "dummy") for n in new_graph)
         }
-        pyblk.Decorator.decorate(new_graph, properties)
+        pyblk.Decorator.decorate_nodes(new_graph, properties)
         values = nx.get_node_attributes(new_graph, "dummy").values()
         assert values and all(n == "dummy" for n in values)
 

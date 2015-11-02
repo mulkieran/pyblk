@@ -80,7 +80,7 @@ class GenerateGraph(object):
         """
         properties = ['DEVNAME', 'DEVPATH', 'DEVTYPE']
         table = UdevProperties.udev_properties(context, graph, properties)
-        Decorator.decorate(graph, table)
+        Decorator.decorate_nodes(graph, table)
 
 
 class RewriteGraph(object):

@@ -113,7 +113,7 @@ class Decorator(object):
     # pylint: disable=too-few-public-methods
 
     @staticmethod
-    def decorate(graph, properties):
+    def decorate_nodes(graph, properties):
         """
         Decorate the graph.
 

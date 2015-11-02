@@ -123,13 +123,13 @@ class Differences(object):
            ldiff,
            DiffStatuses.REMOVED
         )
-        Decorator.decorate(graph, removed)
+        Decorator.decorate_nodes(graph, removed)
         added = DifferenceMarkers.node_differences(
            graph,
            rdiff,
            DiffStatuses.ADDED
         )
-        Decorator.decorate(graph, added)
+        Decorator.decorate_nodes(graph, added)
         return graph
 
     @classmethod
@@ -150,7 +150,7 @@ class Differences(object):
            ldiff,
            DiffStatuses.REMOVED
         )
-        Decorator.decorate(graph, removed)
+        Decorator.decorate_nodes(graph, removed)
         return graph
 
     @classmethod
@@ -171,5 +171,5 @@ class Differences(object):
            rdiff,
            DiffStatuses.ADDED
         )
-        Decorator.decorate(graph, added)
+        Decorator.decorate_nodes(graph, added)
         return graph
