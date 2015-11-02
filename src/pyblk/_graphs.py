@@ -228,11 +228,13 @@ class DiffGraph(object):
         :param `DiGraph` graph2: a graph
         :param str diff: the diff to perform
         """
+        node_matcher = _compare.Matcher(['identifier', 'nodetype'], 'node')
+        match_func = node_matcher.get_match
         if diff == "full":
-            return _compare.Differences.full_diff(graph1, graph2)
+            return _compare.Differences.full_diff(graph1, graph2, match_func)
         elif diff == "left":
-            return _compare.Differences.left_diff(graph1, graph2)
+            return _compare.Differences.left_diff(graph1, graph2, match_func)
         elif diff == "right":
-            return _compare.Differences.right_diff(graph1, graph2)
+            return _compare.Differences.right_diff(graph1, graph2, match_func)
         else:
             assert False

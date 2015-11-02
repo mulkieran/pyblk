@@ -49,6 +49,9 @@ class TestGraphComparison(object):
         """
         Verify that two identical graphs are equivalent.
         """
+        node_matcher = pyblk.Matcher(['identifier', 'nodetype'], 'node')
+        edge_matcher = pyblk.Matcher(['edgetype'], 'edge')
+
         new_graph = GRAPH.copy()
         pyblk.RewriteGraph.convert_graph(new_graph)
         filepath = str(tmpdir.join('test.gml'))
@@ -59,13 +62,21 @@ class TestGraphComparison(object):
         graph2 = nx.read_gml(filepath)
         pyblk.RewriteGraph.deconvert_graph(graph2)
 
-        assert pyblk.Compare.is_equivalent(graph1, graph2)
+        assert pyblk.Compare.is_equivalent(
+           graph1,
+           graph2,
+           node_matcher.get_iso_match(),
+           edge_matcher.get_iso_match()
+        )
 
 
 class TestGraphDifference(object):
     """
     Test ability to find differences among graphs.
     """
+
+    NODE_MATCHER = pyblk.Matcher(['identifier', 'nodetype'], 'node')
+    EDGE_MATCHER = pyblk.Matcher(['edgetype'], 'edge')
 
     def test_equal(self, tmpdir):
         """
@@ -81,27 +92,64 @@ class TestGraphDifference(object):
         graph2 = nx.read_gml(filepath)
         pyblk.RewriteGraph.deconvert_graph(graph2)
 
-        (diff1, diff2) = pyblk.Differences.node_differences(graph1, graph2)
+        (diff1, diff2) = pyblk.Differences.node_differences(
+           graph1,
+           graph2,
+           self.NODE_MATCHER.get_match
+        )
+        assert len(diff1) == 0 and len(diff2) == 0
+        (diff1, diff2) = pyblk.Differences.edge_differences(
+           graph1,
+           graph2,
+           self.EDGE_MATCHER.get_match
+        )
         assert len(diff1) == 0 and len(diff2) == 0
 
-        full_diff = pyblk.Differences.full_diff(graph1, graph2)
-        assert pyblk.Compare.is_equivalent(full_diff, graph1)
+        full_diff = pyblk.Differences.full_diff(
+           graph1,
+           graph2,
+           self.NODE_MATCHER.get_match
+        )
+        assert pyblk.Compare.is_equivalent(
+           full_diff,
+           graph1,
+           self.NODE_MATCHER.get_iso_match(),
+           self.EDGE_MATCHER.get_iso_match()
+        )
         statuses = nx.get_node_attributes(full_diff, "diffstatus")
         assert not any(statuses[k] is pyblk.DiffStatuses.REMOVED \
            for k in statuses)
         assert not any(statuses[k] is pyblk.DiffStatuses.ADDED \
            for k in statuses)
 
-        left_diff = pyblk.Differences.left_diff(graph1, graph2)
-        assert pyblk.Compare.is_equivalent(left_diff, graph1)
+        left_diff = pyblk.Differences.left_diff(
+           graph1,
+           graph2,
+           self.NODE_MATCHER.get_match
+        )
+        assert pyblk.Compare.is_equivalent(
+           left_diff,
+           graph1,
+           self.NODE_MATCHER.get_iso_match(),
+           self.EDGE_MATCHER.get_iso_match()
+        )
         statuses = nx.get_node_attributes(left_diff, "diffstatus")
         assert not any(statuses[k] is pyblk.DiffStatuses.REMOVED \
            for k in statuses)
         assert not any(statuses[k] is pyblk.DiffStatuses.ADDED \
            for k in statuses)
 
-        right_diff = pyblk.Differences.right_diff(graph1, graph2)
-        assert pyblk.Compare.is_equivalent(right_diff, graph1)
+        right_diff = pyblk.Differences.right_diff(
+           graph1,
+           graph2,
+           self.NODE_MATCHER.get_match
+        )
+        assert pyblk.Compare.is_equivalent(
+           right_diff,
+           graph1,
+           self.NODE_MATCHER.get_iso_match(),
+           self.EDGE_MATCHER.get_iso_match()
+        )
         statuses = nx.get_node_attributes(right_diff, "diffstatus")
         assert not any(statuses[k] is pyblk.DiffStatuses.REMOVED \
            for k in statuses)
@@ -114,33 +162,69 @@ class TestGraphDifference(object):
         """
         empty_graph = nx.DiGraph()
 
-        (diff1, diff2) = pyblk.Differences.node_differences(GRAPH, empty_graph)
+        (diff1, diff2) = pyblk.Differences.node_differences(
+           GRAPH,
+           empty_graph,
+           self.NODE_MATCHER.get_match
+        )
 
         assert sorted(diff1.nodes()) == sorted(GRAPH.nodes())
         assert sorted(diff2.nodes()) == sorted(empty_graph.nodes())
 
-        full_diff = pyblk.Differences.full_diff(GRAPH, empty_graph)
+        (diff1, diff2) = pyblk.Differences.edge_differences(
+           GRAPH,
+           empty_graph,
+           self.NODE_MATCHER.get_match
+        )
+        assert sorted(diff1.edges()) == sorted(GRAPH.edges())
+        assert sorted(diff2.edges()) == sorted(empty_graph.edges())
+
+        full_diff = pyblk.Differences.full_diff(
+           GRAPH,
+           empty_graph,
+           self.NODE_MATCHER.get_match
+        )
         statuses = nx.get_node_attributes(full_diff, "diffstatus")
         assert all(statuses[k] is pyblk.DiffStatuses.REMOVED for k in statuses)
         assert len(statuses) == len(GRAPH)
 
-        full_diff = pyblk.Differences.full_diff(empty_graph, GRAPH)
+        full_diff = pyblk.Differences.full_diff(
+           empty_graph,
+           GRAPH,
+           self.NODE_MATCHER.get_match
+        )
         statuses = nx.get_node_attributes(full_diff, "diffstatus")
         assert all(statuses[k] is pyblk.DiffStatuses.ADDED for k in statuses)
         assert len(statuses) == len(GRAPH)
 
-        left_diff = pyblk.Differences.left_diff(GRAPH, empty_graph)
+        left_diff = pyblk.Differences.left_diff(
+           GRAPH,
+           empty_graph,
+           self.NODE_MATCHER.get_match
+        )
         statuses = nx.get_node_attributes(left_diff, "diffstatus")
         assert all(statuses[k] is pyblk.DiffStatuses.REMOVED for k in statuses)
         assert len(statuses) == len(GRAPH)
 
-        left_diff = pyblk.Differences.left_diff(empty_graph, GRAPH)
+        left_diff = pyblk.Differences.left_diff(
+           empty_graph,
+           GRAPH,
+           self.NODE_MATCHER.get_match
+        )
         assert left_diff.order() == 0
 
-        right_diff = pyblk.Differences.right_diff(empty_graph, GRAPH)
+        right_diff = pyblk.Differences.right_diff(
+           empty_graph,
+           GRAPH,
+           self.NODE_MATCHER.get_match
+        )
         statuses = nx.get_node_attributes(right_diff, "diffstatus")
         assert all(statuses[k] is pyblk.DiffStatuses.ADDED for k in statuses)
         assert len(statuses) == len(GRAPH)
 
-        right_diff = pyblk.Differences.right_diff(GRAPH, empty_graph)
+        right_diff = pyblk.Differences.right_diff(
+           GRAPH,
+           empty_graph,
+           self.NODE_MATCHER.get_match
+        )
         assert right_diff.order() == 0
