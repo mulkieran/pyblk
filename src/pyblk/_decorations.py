@@ -85,7 +85,6 @@ class DifferenceMarkers(object):
     """
     Difference markers, either added or removed or present.
     """
-    # pylint: disable=too-few-public-methods
 
     @staticmethod
     def node_differences(graph, difference, value):
@@ -102,6 +101,25 @@ class DifferenceMarkers(object):
         for node in graph:
             if node in difference:
                 ds_dict[node] = value
+
+        return {'diffstatus': ds_dict}
+
+    @staticmethod
+    def edge_differences(graph, difference, value):
+        """
+        Get edge differences in ``graph`` based on ``difference``.
+
+        :param `DiGraph` graph: the graph
+        :param `DiGraph` difference: a graph representing the difference
+        :param str value: marker to add to graph
+
+        If edge is in difference, adds ``value`` as "diffstatus" attribute.
+        """
+        ds_dict = dict()
+        diff_edges = difference.edges()
+        for edge in graph.edges_iter():
+            if edge in diff_edges:
+                ds_dict[edge] = value
 
         return {'diffstatus': ds_dict}
 

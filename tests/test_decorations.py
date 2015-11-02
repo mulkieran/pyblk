@@ -44,6 +44,7 @@ class TestGraphNodeDecorations(object):
     """
     Test decorating structure graphs.
     """
+    # pylint: disable=too-few-public-methods
 
     def test_devpath(self):
         """
@@ -57,11 +58,24 @@ class TestGraphNodeDecorations(object):
         devpaths = props['UDEV']
         assert all(devpaths[k]['DEVPATH'] == k for k in devpaths)
 
+
+class TestDifferenceMarkers(object):
+    """
+    Test markers for differences.
+    """
+
     def test_empty_differences(self):
         """
         Test that an empty difference value leads to an empty attribute table.
         """
         markers = pyblk.DifferenceMarkers.node_differences(
+           GRAPH,
+           nx.DiGraph(),
+           "present"
+        )
+        assert not markers['diffstatus']
+
+        markers = pyblk.DifferenceMarkers.edge_differences(
            GRAPH,
            nx.DiGraph(),
            "present"
@@ -81,6 +95,15 @@ class TestGraphNodeDecorations(object):
         diffstats = markers['diffstatus']
         assert len(diffstats) == len(GRAPH)
         assert all(diffstats[n] == 'present' for n in GRAPH)
+
+        markers = pyblk.DifferenceMarkers.edge_differences(
+           GRAPH,
+           GRAPH.copy(),
+           "present"
+        )
+        diffstats = markers['diffstatus']
+        assert len(diffstats) == len(GRAPH.edges())
+        assert all(diffstats[e] == 'present' for e in GRAPH.edges())
 
 
 class TestNodeDecorating(object):
