@@ -131,10 +131,18 @@ def get_graph(journal_handle, graph_key, choice):
             entry = journal_handle.get_previous()
         return None
     elif choice == "diff":
-        cursor = journal_handle.next()['__CURSOR']
+        try:
+            cursor = journal_handle.next()['__CURSOR']
+        except StopIteration:
+            cursor = None
+
         prev_graph = get_graph(journal_handle, graph_key, "before")
-        journal_handle.seek_cursor(cursor)
-        next_graph = get_graph(journal_handle, graph_key, "after")
+        if cursor is not None:
+            journal_handle.seek_cursor(cursor)
+            next_graph = get_graph(journal_handle, graph_key, "after")
+        else:
+            next_graph = nx.DiGraph()
+
         return pyblk.DiffGraph.do_diff(
            prev_graph or nx.DiGraph(),
            next_graph or nx.DiGraph(),
