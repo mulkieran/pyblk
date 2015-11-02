@@ -110,10 +110,23 @@ class Decorator(object):
     """
     Decorate graph elements with attributes.
     """
-    # pylint: disable=too-few-public-methods
 
     @staticmethod
-    def decorate_nodes(graph, properties):
+    def _decorate(graph, properties, setter=nx.set_node_attributes):
+        """
+        Decorate the graph.
+
+        :param `DiGraph` graph: the graph
+        :param properties: a dict of properties
+        :type properties: dict of property name -> graph element -> value
+        :param setter: a function to set the attributes
+        :type setter: function (one of networkx.set_{node, edge}_attributes)
+        """
+        for property_name, value in properties.items():
+            setter(graph, property_name, value)
+
+    @classmethod
+    def decorate_nodes(cls, graph, properties):
         """
         Decorate the graph.
 
@@ -121,6 +134,15 @@ class Decorator(object):
         :param properties: a dict of properties
         :type properties: dict of property name -> graph element -> value
         """
+        cls._decorate(graph, properties, nx.set_node_attributes)
 
-        for property_name, value in properties.items():
-            nx.set_node_attributes(graph, property_name, value)
+    @classmethod
+    def decorate_edges(cls, graph, properties):
+        """
+        Decorate the graph.
+
+        :param `DiGraph` graph: the graph
+        :param properties: a dict of properties
+        :type properties: dict of property name -> graph element -> value
+        """
+        cls._decorate(graph, properties, nx.set_edge_attributes)
