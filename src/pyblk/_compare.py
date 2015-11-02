@@ -101,6 +101,48 @@ def _node_match(attr1, attr2):
     }
     return node1_dict == node2_dict
 
+def _get_edge_match(graph1, graph2):
+    """
+    Returns a function that checks equality of two edges.
+
+    :param `DiGraph` graph1: a graph
+    :param `DiGraph` graph2: a graph
+    :returns: a function that compares two graph edges
+    :rtype: edge * edge -> bool
+    """
+    attr1_dict = {'edgetype' : nx.get_edge_attributes(graph1, 'edgetype')}
+    attr2_dict = {'edgetype' : nx.get_edge_attributes(graph2, 'edgetype')}
+
+    def the_func(edge1, edge2):
+        """
+        Checks equality of two edges.
+
+        :param edge1: an edge
+        :param edge2: an edge
+        :returns: True if edges are equal, otherwise False
+        :rtype: bool
+        """
+        node1_dict = {'edgetype' : attr1_dict['edgetype'][edge1]}
+        node2_dict = {'edgetype' : attr2_dict['edgetype'][edge2]}
+        return node1_dict == node2_dict
+
+    return the_func
+
+def _edge_match(attr1, attr2):
+    """
+    Returns True if edges with the given attrs should be considered
+    equivalent.
+
+    :param dict attr1: attributes of first node
+    :param dict attr2: attributes of second node
+
+    :return: True if nodes are equivalent, otherwise False
+    :rtype: bool
+    """
+    edge1_dict = {'edgetype' : attr1['edgetype']}
+    edge2_dict = {'edgetype' : attr2['edgetype']}
+    return edge1_dict == edge2_dict
+
 class Compare(object):
     """
     Compare two storage graphs.
@@ -122,7 +164,7 @@ class Compare(object):
            graph1,
            graph2,
            _node_match,
-           iso.categorical_edge_match('edgetype', None)
+           _edge_match
         )
 
 class Differences(object):
