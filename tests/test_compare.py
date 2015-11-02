@@ -116,8 +116,8 @@ class TestGraphDifference(object):
 
         (diff1, diff2) = pyblk.Differences.node_differences(GRAPH, empty_graph)
 
-        assert pyblk.Compare.is_equivalent(diff1, GRAPH)
-        assert pyblk.Compare.is_equivalent(diff2, empty_graph)
+        assert sorted(diff1.nodes()) == sorted(GRAPH.nodes())
+        assert sorted(diff2.nodes()) == sorted(empty_graph.nodes())
 
         full_diff = pyblk.Differences.full_diff(GRAPH, empty_graph)
         statuses = nx.get_node_attributes(full_diff, "diffstatus")

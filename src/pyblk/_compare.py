@@ -40,6 +40,45 @@ from ._attributes import DiffStatuses
 from ._decorations import Decorator
 from ._decorations import DifferenceMarkers
 
+def _get_node_match(graph1, graph2):
+    """
+    Returns a function that checks equality of two nodes.
+
+    :param `DiGraph` graph1: a graph
+    :param `DiGraph` graph2: a graph
+    :returns: a function that compares two graph nodes
+    :rtype: node * node -> bool
+    """
+    attr1_dict = {
+       'identifier' : nx.get_node_attributes(graph1, 'identifier'),
+       'nodetype' : nx.get_node_attributes(graph1, 'nodetype')
+    }
+
+    attr2_dict = {
+       'identifier' : nx.get_node_attributes(graph2, 'identifier'),
+       'nodetype' : nx.get_node_attributes(graph2, 'nodetype')
+    }
+
+    def the_func(node1, node2):
+        """
+        Checks equality of two nodes.
+
+        :param node1: a node
+        :param node2: a node
+        :returns: True if nodes are equal, otherwise False
+        :rtype: bool
+        """
+        node1_dict = {
+           'identifer' : attr1_dict['identifier'][node1],
+           'nodetype' : attr1_dict['nodetype'][node1]
+        }
+        node2_dict = {
+           'identifer' : attr2_dict['identifier'][node2],
+           'nodetype' : attr2_dict['nodetype'][node2]
+        }
+        return node1_dict == node2_dict
+
+    return the_func
 
 def _node_match(attr1, attr2):
     """
@@ -52,14 +91,15 @@ def _node_match(attr1, attr2):
     :return: True if nodes are equivalent, otherwise False
     :rtype: bool
     """
-    type1 = attr1['nodetype']
-    type2 = attr2['nodetype']
-
-    if type1 is not type2:
-        return False
-
-    return attr1['identifier'] == attr2['identifier']
-
+    node1_dict = {
+       'identifer' : attr1['identifier'],
+       'nodetype' : attr1['nodetype']
+    }
+    node2_dict = {
+       'identifer' : attr2['identifier'],
+       'nodetype' : attr2['nodetype']
+    }
+    return node1_dict == node2_dict
 
 class Compare(object):
     """
@@ -91,20 +131,35 @@ class Differences(object):
     """
 
     @staticmethod
-    def node_differences(graph1, graph2):
+    def node_differences(graph1, graph2, node_equal=_get_node_match):
         """
         Find the differences between graph1 and graph2 as a pair of graphs.
 
         :param `DiGraph` graph1: a graph
         :param `DiGraph` graph2: a graph
+        :param node_equal: a function that checks if two nodes are equal
+        :type node_equal: `DiGraph` * `DiGraph` -> node * node -> bool
 
         :returns: a pair of graphs, representing graph1 - graph2 and vice-versa
         :rtype: tuple of `DiGraph`
         """
-        return (
-           graph1.subgraph(n for n in graph1 if not n in graph2),
-           graph2.subgraph(n for n in graph2 if not n in graph1)
-        )
+        diff_1 = nx.DiGraph()
+        diff_2 = nx.DiGraph()
+
+        nodes_1 = graph1.nodes()
+        nodes_2 = graph2.nodes()
+
+        node_equal = node_equal(graph1, graph2)
+
+        diff_nodes_1 = (n for n in nodes_1 if\
+           not any(node_equal(n, o) for o in nodes_2))
+        diff_nodes_2 = (n for n in nodes_2 if \
+           not any(node_equal(n, o) for o in nodes_1))
+
+        diff_1.add_nodes_from(diff_nodes_1)
+        diff_2.add_nodes_from(diff_nodes_2)
+
+        return (diff_1, diff_2)
 
     @classmethod
     def full_diff(cls, graph1, graph2):
