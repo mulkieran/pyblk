@@ -214,69 +214,142 @@ class Differences(object):
         return (diff_1, diff_2)
 
     @classmethod
-    def full_diff(cls, graph1, graph2, node_equal):
+    def full_diff(
+       cls,
+       graph1,
+       graph2,
+       node_equal=lambda g1, g2: lambda x, y: True,
+       edge_equal=lambda g1, g2: lambda x, y: True
+    ):
         """
         Return a graph that shows the full difference between graph1 and graph2.
 
         :param `DiGraph` graph1: a graph
         :param `DiGraph` graph2: a graph
+        :param node_equal: a function that determines if two nodes are equal
+        :type node_equal: `DiGraph` * `DiGraph` -> node * node -> bool
+        :param edge_equal: a function that determines if two edges are equal
+        :type edge_equal: `DiGraph` * `DiGraph` -> edge * edge -> bool
         :returns: an annotated graph composed of ``graph1`` and ``graph2``
-        :rtype: DiGraph
+        :rtype: `DiGraph`
         """
-        (ldiff, rdiff) = cls.node_differences(graph1, graph2, node_equal)
         graph = nx.compose(graph1, graph2, name="union")
+
+        (l_node_diff, r_node_diff) = cls.node_differences(
+           graph1,
+           graph2,
+           node_equal
+        )
+        (l_edge_diff, r_edge_diff) = cls.edge_differences(
+           graph1,
+           graph2,
+           edge_equal
+        )
+
         removed = DifferenceMarkers.node_differences(
            graph,
-           ldiff,
+           l_node_diff,
            DiffStatuses.REMOVED
         )
         Decorator.decorate_nodes(graph, removed)
+        removed = DifferenceMarkers.edge_differences(
+           graph,
+           l_edge_diff,
+           DiffStatuses.REMOVED
+        )
+        Decorator.decorate_edges(graph, removed)
+
         added = DifferenceMarkers.node_differences(
            graph,
-           rdiff,
+           r_node_diff,
            DiffStatuses.ADDED
         )
         Decorator.decorate_nodes(graph, added)
+        added = DifferenceMarkers.edge_differences(
+           graph,
+           r_edge_diff,
+           DiffStatuses.ADDED
+        )
+        Decorator.decorate_edges(graph, added)
+
         return graph
 
     @classmethod
-    def left_diff(cls, graph1, graph2, node_equal):
+    def left_diff(
+       cls,
+       graph1,
+       graph2,
+       node_equal=lambda g1, g2: lambda x, y: True,
+       edge_equal=lambda g1, g2: lambda x, y: True
+    ):
         """
         Return a graph of the left difference between graph1 and graph2.
 
         :param `DiGraph` graph1: a graph
         :param `DiGraph` graph2: a graph
+        :param node_equal: a function that determines if two nodes are equal
+        :type node_equal: `DiGraph` * `DiGraph` -> node * node -> bool
+        :param edge_equal: a function that determines if two edges are equal
+        :type edge_equal: `DiGraph` * `DiGraph` -> edge * edge -> bool
         :returns: ``graph1`` with removed nodes marked
-        :rtype: DiGraph
+        :rtype: `DiGraph`
         """
-        (ldiff, _) = cls.node_differences(graph1, graph2, node_equal)
-
         graph = graph1.copy()
+
+        (ldiff, _) = cls.node_differences(graph1, graph2, node_equal)
         removed = DifferenceMarkers.node_differences(
            graph,
            ldiff,
            DiffStatuses.REMOVED
         )
         Decorator.decorate_nodes(graph, removed)
+
+        (ldiff, _) = cls.edge_differences(graph1, graph2, edge_equal)
+        removed = DifferenceMarkers.edge_differences(
+           graph,
+           ldiff,
+           DiffStatuses.REMOVED
+        )
+        Decorator.decorate_edges(graph, removed)
+
         return graph
 
     @classmethod
-    def right_diff(cls, graph1, graph2, node_equal):
+    def right_diff(
+       cls,
+       graph1,
+       graph2,
+       node_equal=lambda g1, g2: lambda x, y: True,
+       edge_equal=lambda g1, g2: lambda x, y: True
+    ):
         """
         Return a graph of the right difference between graph1 and graph2.
 
         :param `DiGraph` graph1: a graph
         :param `DiGraph` graph2: a graph
+        :param node_equal: a function that determines if two nodes are equal
+        :type node_equal: `DiGraph` * `DiGraph` -> node * node -> bool
+        :param edge_equal: a function that determines if two edges are equal
+        :type edge_equal: `DiGraph` * `DiGraph` -> edge * edge -> bool
         :returns: ``graph2`` with added nodes marked
-        :rtype: DiGraph
+        :rtype: `DiGraph`
         """
-        (_, rdiff) = cls.node_differences(graph1, graph2, node_equal)
-
         graph = graph2.copy()
+
+        (_, rdiff) = cls.node_differences(graph1, graph2, node_equal)
         added = DifferenceMarkers.node_differences(
            graph,
            rdiff,
            DiffStatuses.ADDED
         )
         Decorator.decorate_nodes(graph, added)
+
+        (_, rdiff) = cls.edge_differences(graph1, graph2, edge_equal)
+        added = DifferenceMarkers.edge_differences(
+           graph,
+           rdiff,
+           DiffStatuses.ADDED
+        )
+        Decorator.decorate_edges(graph, added)
+
         return graph

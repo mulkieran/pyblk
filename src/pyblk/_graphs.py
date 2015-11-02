@@ -230,11 +230,27 @@ class DiffGraph(object):
         """
         node_matcher = _compare.Matcher(['identifier', 'nodetype'], 'node')
         match_func = node_matcher.get_match
+        edge_matcher = lambda g1, g2: lambda x, y: x == y
         if diff == "full":
-            return _compare.Differences.full_diff(graph1, graph2, match_func)
+            return _compare.Differences.full_diff(
+               graph1,
+               graph2,
+               match_func,
+               edge_matcher
+            )
         elif diff == "left":
-            return _compare.Differences.left_diff(graph1, graph2, match_func)
+            return _compare.Differences.left_diff(
+               graph1,
+               graph2,
+               match_func,
+               edge_matcher
+            )
         elif diff == "right":
-            return _compare.Differences.right_diff(graph1, graph2, match_func)
+            return _compare.Differences.right_diff(
+               graph1,
+               graph2,
+               match_func,
+               edge_matcher
+            )
         else:
             assert False
