@@ -171,7 +171,7 @@ class Differences(object):
 
         edges_equal = edges_equal(graph1, graph2)
 
-        diff_edges_1 = (n for n in edges_1 if\
+        diff_edges_1 = (n for n in edges_1 if \
            not any(edges_equal(n, o) for o in edges_2))
         diff_edges_2 = (n for n in edges_2 if \
            not any(edges_equal(n, o) for o in edges_1))
@@ -203,7 +203,7 @@ class Differences(object):
 
         node_equal = node_equal(graph1, graph2)
 
-        diff_nodes_1 = (n for n in nodes_1 if\
+        diff_nodes_1 = (n for n in nodes_1 if \
            not any(node_equal(n, o) for o in nodes_2))
         diff_nodes_2 = (n for n in nodes_2 if \
            not any(node_equal(o, n) for o in nodes_1))
