@@ -54,25 +54,6 @@ class Print(object):
         return len(cls._EDGE_STR)
 
     @classmethod
-    def node_string(cls, info_func, fmt_func, orphan, indent, node):
-        """
-        Get a string corresponding to the node.
-
-        :param info_func: a function that yields information about the node
-        :param fmt_func: a function that helps format the info
-        :param bool orphan: True if this node has no parents, otherwise False
-        :param int indent: start printing after ``indent`` spaces
-        :param `Node` node: the node to print
-
-        :returns: a string representation of the node info
-        :rtype: str
-        """
-        # pylint: disable=too-many-arguments
-        return (" " * indent) + \
-           ("" if orphan else cls._EDGE_STR) + \
-           fmt_func(info_func(node))
-
-    @classmethod
     def node_strings(
        cls,
        info_func,
@@ -96,7 +77,9 @@ class Print(object):
         :param `Node` node: the node to print
         """
         # pylint: disable=too-many-arguments
-        yield cls.node_string(info_func, fmt_func, orphan, indent, node)
+        yield (" " * indent) + \
+           ("" if orphan else cls._EDGE_STR) + \
+           fmt_func(info_func(node))
 
 
         successors = sorted(
