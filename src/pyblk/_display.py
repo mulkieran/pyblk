@@ -197,7 +197,7 @@ class PartitionTransformer(GraphTransformer):
     Transforms nodes that are partitions.
 
     Sets node label to device name rather than device path.
-    Sets node shape to triangle.
+    Sets node shape to rectangle.
     """
 
     @staticmethod
@@ -205,7 +205,7 @@ class PartitionTransformer(GraphTransformer):
         obj.attr['label'] = os.path.basename(
            Utils.get_attr(obj, ['UDEV', 'DEVPATH'])
         )
-        obj.attr['shape'] = "triangle"
+        obj.attr['shape'] = "rectangle"
 
     @classmethod
     def objects(cls, graph):
@@ -273,12 +273,12 @@ class PartitionedDiskTransformer(GraphTransformer):
 
 class SpindleTransformer(GraphTransformer):
     """
-    Make every actual physical spindle into a double octagon.
+    Make every actual physical spindle an octagon.
     """
 
     @staticmethod
     def xform_object(graph, obj):
-        obj.attr['shape'] = "doubleoctagon"
+        obj.attr['shape'] = "octagon"
 
     @classmethod
     def objects(cls, graph):
@@ -338,7 +338,8 @@ class AddedNodeTransformer(GraphTransformer):
 
     @staticmethod
     def xform_object(graph, obj):
-        obj.attr['style'] = 'bold'
+        obj.attr['style'] = 'filled'
+        obj.attr['color'] = 'lightgray'
 
     @classmethod
     def objects(cls, graph):
