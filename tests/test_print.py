@@ -78,6 +78,7 @@ class TestGraphPrint(object):
            GRAPH,
            True,
            True,
+           None,
            0,
            node
         )

@@ -64,6 +64,11 @@ class Rewriter(object):
             node_types[key] = str(value)
         nx.set_node_attributes(graph, 'diffstatus', node_types)
 
+        edge_types = nx.get_edge_attributes(graph, 'diffstatus')
+        for key, value in edge_types.items():
+            edge_types[key] = str(value)
+        nx.set_edge_attributes(graph, 'diffstatus', edge_types)
+
     @staticmethod
     def destringize(graph):
         """
@@ -83,3 +88,8 @@ class Rewriter(object):
         for key, value in node_types.items():
             node_types[key] = DiffStatuses.get_value(value)
         nx.set_node_attributes(graph, 'diffstatus', node_types)
+
+        edge_types = nx.get_edge_attributes(graph, 'diffstatus')
+        for key, value in edge_types.items():
+            edge_types[key] = DiffStatuses.get_value(value)
+        nx.set_edge_attributes(graph, 'diffstatus', edge_types)

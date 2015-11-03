@@ -35,6 +35,8 @@ import abc
 
 import six
 
+from ._attributes import DiffStatuses
+
 
 class Print(object):
     """
@@ -54,6 +56,25 @@ class Print(object):
         """
         return len(cls._EDGE_STR)
 
+    @staticmethod
+    def format_edge(edge_str, diffstatus):
+        """
+        Format the edge based on the ``diffstatus``.
+
+        :returns: a formatted string
+        :rtype: str
+        """
+        if diffstatus is None:
+            return edge_str
+
+        if diffstatus is DiffStatuses.ADDED:
+            return edge_str.replace('-', '+')
+
+        if diffstatus is DiffStatuses.REMOVED:
+            return edge_str.replace('-', ' ')
+
+        assert False
+
     @classmethod
     def node_strings(
        cls,
@@ -63,6 +84,7 @@ class Print(object):
        graph,
        orphan,
        last,
+       diffstatus,
        indent,
        node
     ):
@@ -76,13 +98,17 @@ class Print(object):
         :param `DiGraph` graph: the graph
         :param bool orphan: True if this node has no parents, otherwise False
         :param bool last: True if this node is the last child, otherwise False
+        :param `DiffStatus` diffstatus: the diffstatus of the edge
         :param int indent: start printing after ``indent`` spaces
         :param `Node` node: the node to print
         """
         # pylint: disable=too-many-arguments
-        yield (" " * indent) + \
-           ("" if orphan else (cls._LAST_STR if last else cls._EDGE_STR)) + \
-           fmt_func(info_func(node))
+        edge_string = "" if orphan else \
+           cls.format_edge(
+              (cls._LAST_STR if last else cls._EDGE_STR),
+              diffstatus
+           )
+        yield (" " * indent) + edge_string + fmt_func(info_func(node))
 
 
         successors = sorted(
@@ -98,6 +124,7 @@ class Print(object):
                graph,
                False,
                succ is successors[-1],
+               graph[node][succ].get('diffstatus'),
                indent if orphan else indent + cls.indentation(),
                succ
             )
