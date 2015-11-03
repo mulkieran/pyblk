@@ -206,6 +206,7 @@ class PrintGraph(object):
                'NAME',
                graph,
                True,
+               True,
                0,
                root
             )

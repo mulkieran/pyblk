@@ -42,6 +42,7 @@ class Print(object):
     """
 
     _EDGE_STR = "|-"
+    _LAST_STR = "`-"
 
     @classmethod
     def indentation(cls):
@@ -61,6 +62,7 @@ class Print(object):
        sort_key,
        graph,
        orphan,
+       last,
        indent,
        node
     ):
@@ -73,12 +75,13 @@ class Print(object):
         :param str sort_key: key to sort on
         :param `DiGraph` graph: the graph
         :param bool orphan: True if this node has no parents, otherwise False
+        :param bool last: True if this node is the last child, otherwise False
         :param int indent: start printing after ``indent`` spaces
         :param `Node` node: the node to print
         """
         # pylint: disable=too-many-arguments
         yield (" " * indent) + \
-           ("" if orphan else cls._EDGE_STR) + \
+           ("" if orphan else (cls._LAST_STR if last else cls._EDGE_STR)) + \
            fmt_func(info_func(node))
 
 
@@ -86,6 +89,7 @@ class Print(object):
            graph.successors(node),
            key=lambda x: info_func(x, [sort_key])[sort_key]
         )
+
         for succ in successors:
             lines = cls.node_strings(
                info_func,
@@ -93,6 +97,7 @@ class Print(object):
                sort_key,
                graph,
                False,
+               succ is successors[-1],
                indent if orphan else indent + cls.indentation(),
                succ
             )
