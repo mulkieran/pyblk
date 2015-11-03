@@ -1,3 +1,5 @@
+#!/usr/bin/python
+#
 # -*- coding: utf-8 -*-
 # Copyright (C) 2015  Red Hat, Inc.
 #
@@ -18,44 +20,60 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    pyblk
-    =====
+    diffdev
+    =======
 
-    Graphing facilities for devices.
+    Python script for comparing graphs of devices.
 
     .. moduleauthor::  Anne Mulhern  <amulhern@redhat.com>
 """
-from ._attributes import DiffStatuses
-from ._attributes import EdgeTypes
-from ._attributes import NodeTypes
 
-from ._graphs import CompareGraph
-from ._graphs import DiffGraph
-from ._graphs import DisplayGraph
-from ._graphs import GenerateGraph
-from ._graphs import PrintGraph
-from ._graphs import RewriteGraph
+import argparse
+import sys
 
-from ._decorations import Decorator
-from ._decorations import DifferenceMarkers
-from ._decorations import UdevProperties
+from networkx import nx
 
-from ._compare import Compare
-from ._compare import Differences
-from ._compare import Matcher
+import pyblk
 
-from ._print import LineInfo
-from ._print import Print
 
-from ._structure import DMPartitionGraphs
-from ._structure import PartitionGraphs
-from ._structure import SpindleGraphs
-from ._structure import SysfsGraphs
-from ._structure import SysfsTraversal
+_ACTIONS = ['dot', 'image', 'print', 'write']
 
-from ._traversal import holders
-from ._traversal import slaves
+_DIFFS = ["left", "right", "full"]
 
-from ._utils import GraphUtils
+def get_parser():
+    """
+    Generate an appropriate parser.
 
-from ._write import Rewriter
+    :returns: an argument parser
+    :rtype: `ArgumentParser`
+    """
+    parser = argparse.ArgumentParser(
+       description="Exit code is 0 if graphs are identical, 1 if equivalent"
+    )
+    parser.add_argument(
+       "path1",
+       help="path of a file containing a graph"
+    )
+    parser.add_argument(
+       "path2",
+       help="path of a file containing a graph"
+    )
+    return parser
+
+
+def main():
+    """
+    The main method for listing device graphs.
+    """
+    args = get_parser().parse_args()
+
+    graph1 = nx.read_gml(args.path1)
+    pyblk.RewriteGraph.deconvert_graph(graph1)
+    graph2 = nx.read_gml(args.path2)
+    pyblk.RewriteGraph.deconvert_graph(graph2)
+
+    return pyblk.CompareGraph.compare(graph1, graph2)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
