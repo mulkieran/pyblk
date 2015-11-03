@@ -116,7 +116,7 @@ def main():
 
     graph = pyblk.DiffGraph.do_diff(graph1, graph2, args.diff)
 
-    if not args.inverse:
+    if args.inverse:
         graph = graph.reverse(copy=False)
 
     if not args.outpath:

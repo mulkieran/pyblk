@@ -113,7 +113,7 @@ def main():
     graph = nx.read_gml(args.filename)
     pyblk.RewriteGraph.deconvert_graph(graph)
 
-    if not args.inverse:
+    if args.inverse:
         graph = graph.reverse(copy=False)
 
     if not args.outpath:
