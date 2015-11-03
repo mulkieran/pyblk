@@ -131,7 +131,9 @@ class DisplayGraph(object):
            _display.PartitionEdgeTransformer,
            _display.CongruenceEdgeTransformer,
            _display.AddedNodeTransformer,
-           _display.RemovedNodeTransformer
+           _display.RemovedNodeTransformer,
+           _display.AddedEdgeTransformer,
+           _display.RemovedEdgeTransformer
         ]
 
         _display.GraphTransformers.xform(dot_graph, xformers)

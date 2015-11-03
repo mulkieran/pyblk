@@ -347,6 +347,36 @@ class AddedNodeTransformer(GraphTransformer):
            Utils.is_diff_status(e, DiffStatuses.ADDED))
 
 
+class AddedEdgeTransformer(GraphTransformer):
+    """
+    Decorate added edges.
+    """
+
+    @staticmethod
+    def xform_object(graph, obj):
+        obj.attr['penwidth'] = '7.0'
+
+    @classmethod
+    def objects(cls, graph):
+        return (e for e in graph.iteredges() if \
+           Utils.is_diff_status(e, DiffStatuses.ADDED))
+
+
+class RemovedEdgeTransformer(GraphTransformer):
+    """
+    Decorate removed edges.
+    """
+
+    @staticmethod
+    def xform_object(graph, obj):
+        obj.attr['penwidth'] = '0.02'
+
+    @classmethod
+    def objects(cls, graph):
+        return (e for e in graph.iteredges() if \
+           Utils.is_diff_status(e, DiffStatuses.REMOVED))
+
+
 class GraphTransformers(object):
     """
     A class that orders and does all graph transformations.
