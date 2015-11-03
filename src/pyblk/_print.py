@@ -41,7 +41,7 @@ class Print(object):
     Methods to print a graph as a sort of forest.
     """
 
-    _EDGE_STR = "|--"
+    _EDGE_STR = "|-"
 
     @classmethod
     def indentation(cls):
