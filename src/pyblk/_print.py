@@ -249,7 +249,7 @@ class Print(object):
         return dict((k, widths[k] + padding) for k in widths)
 
     @staticmethod
-    def header_str(column_widths, column_headers):
+    def header_str(column_widths, column_headers, alignment):
         """
         Get the column headers.
 
@@ -257,17 +257,19 @@ class Print(object):
         :type column_widths: dict of str * int
         :param column_headers: column headers
         :type column_headers: list of str
+        :param alignment: alignment for column headers
+        :type alignment: dict of str * str {'<', '>', '^'}
 
         :returns: the column headers
         :rtype: str
         """
         format_str = "".join(
-           '{:<%d}' % column_widths[k] for k in column_headers
+           '{:%s%d}' % (alignment[k], column_widths[k]) for k in column_headers
         )
         return format_str.format(*column_headers)
 
     @staticmethod
-    def format_str(column_widths, column_headers):
+    def format_str(column_widths, column_headers, alignment):
         """
         Format string for every data value.
 
@@ -275,16 +277,19 @@ class Print(object):
         :type column_widths: dict of str * int
         :param column_headers: column headers
         :type column_headers: list of str
+        :param alignment: alignment for column headers
+        :type alignment: dict of str * str {'<', '>', '^'}
 
         :returns: a format string
         :rtype: str
         """
         return "".join(
-           '{%s:<%d}' % (k, column_widths[k]) for k in column_headers
+           '{%s:%s%d}' % (k, alignment[k], column_widths[k]) \
+              for k in column_headers
         )
 
     @classmethod
-    def lines(cls, column_headers, lines, padding):
+    def lines(cls, column_headers, lines, padding, alignment):
         """
         Yield lines to be printed.
 
@@ -293,12 +298,14 @@ class Print(object):
         :param lines: line infos
         :type lines: list of dict
         :param int padding: number of spaces to pad on right
+        :param alignment: alignment for column headers
+        :type alignment: dict of str * str {'<', '>', '^'}
         """
         column_widths = cls.calculate_widths(column_headers, lines, padding)
 
-        yield cls.header_str(column_widths, column_headers)
+        yield cls.header_str(column_widths, column_headers, alignment)
 
-        fmt_str = cls.format_str(column_widths, column_headers)
+        fmt_str = cls.format_str(column_widths, column_headers, alignment)
         for line in lines:
             yield fmt_str.format(**line)
 
@@ -312,6 +319,10 @@ class LineInfo(object):
 
     supported_keys = abc.abstractproperty(
        doc="the keys this class supports"
+    )
+
+    alignment = abc.abstractproperty(
+       doc='alignment for each key'
     )
 
     @abc.abstractmethod

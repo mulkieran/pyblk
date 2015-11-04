@@ -31,6 +31,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from collections import defaultdict
+
 import networkx as nx
 
 from ._attributes import NodeTypes
@@ -159,6 +161,8 @@ class SimpleLineInfo(_print.LineInfo):
 
     supported_keys = ['NAME', 'TYPE']
 
+    alignment = defaultdict(lambda: '<')
+
     def _func_name(self, node):
         """
         Calculates the field for key NAME.
@@ -235,7 +239,13 @@ class PrintGraph(object):
 
         lines = [l for root in roots for l in node_func(root)]
         lines = list(_print.XformLines.xform(line_info.supported_keys, lines))
-        for line in _print.Print.lines(line_info.supported_keys, lines, 2):
+        lines = _print.Print.lines(
+           line_info.supported_keys,
+           lines,
+           2,
+           line_info.alignment
+        )
+        for line in lines:
             print(line, end="\n", file=out)
 
 

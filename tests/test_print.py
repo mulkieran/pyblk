@@ -44,6 +44,8 @@ class SimpleLineInfo(pyblk.LineInfo):
 
     supported_keys = ['NAME']
 
+    alignment = {'NAME' : '<'}
+
     def _func_name(self, node):
         # pylint: disable=unused-argument
         """
@@ -83,5 +85,10 @@ class TestGraphPrint(object):
         xformed = pyblk.XformLines.xform(line_info.supported_keys, lines)
         assert len(list(xformed)) == len(lines)
 
-        final = pyblk.Print.lines(line_info.supported_keys, xformed, 2)
+        final = pyblk.Print.lines(
+           line_info.supported_keys,
+           xformed,
+           2,
+           line_info.alignment
+        )
         assert len(list(final)) >= len(list(xformed))
