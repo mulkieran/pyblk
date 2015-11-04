@@ -33,6 +33,8 @@ from __future__ import unicode_literals
 
 import networkx as nx
 
+from ._attributes import NodeTypes
+
 from ._decorations import Decorator
 from ._decorations import UdevProperties
 
@@ -153,8 +155,9 @@ class SimpleLineInfo(_print.LineInfo):
         self.key_map = nx.get_node_attributes(graph, 'identifier')
         self.udev_map = nx.get_node_attributes(graph, 'UDEV')
         self.diffstatus_map = nx.get_node_attributes(graph, 'diffstatus')
+        self.typemap = nx.get_node_attributes(graph, 'nodetype')
 
-    supported_keys = ['NAME']
+    supported_keys = ['NAME', 'TYPE']
 
     def _func_name(self, node):
         """
@@ -175,9 +178,27 @@ class SimpleLineInfo(_print.LineInfo):
                 name = ">>%s<<" % name
         return name
 
+    def _func_type(self, node):
+        """
+        Calculates the field for key TYPE.
+
+        :param node: the node
+
+        :returns: the value to display for ``node`` for key 'TYPE'.
+        :rtype: str
+        """
+        nodetype = self.typemap[node]
+        if nodetype is NodeTypes.WWN:
+            return "spindle"
+
+        udev_info = self.udev_map.get(node)
+        return udev_info and udev_info.get('DEVTYPE', 'unknown')
+
     def func_table(self, index):
         if index == 'NAME':
             return self._func_name
+        if index == 'TYPE':
+            return self._func_type
         return lambda x: None
 
 class PrintGraph(object):
