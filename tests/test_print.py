@@ -71,15 +71,17 @@ class TestGraphPrint(object):
         """
         node = max(GRAPH.nodes(), key=GRAPH.out_degree)
         line_info = SimpleLineInfo()
-        lines = pyblk.Print.node_strings(
+        lines = pyblk.LineArrangements.node_strings_from_root(
            line_info.info,
-           lambda d: d['NAME'],
            'NAME',
            GRAPH,
-           True,
-           True,
-           None,
-           0,
            node
         )
-        assert len(list(lines)) >= GRAPH.out_degree(node)
+        lines = list(lines)
+        assert len(lines) >= GRAPH.out_degree(node)
+
+        xformed = pyblk.XformLines.xform(line_info.supported_keys, lines)
+        assert len(list(xformed)) == len(lines)
+
+        final = pyblk.Print.lines(line_info.supported_keys, xformed, 2)
+        assert len(list(final)) >= len(list(xformed))

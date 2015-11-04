@@ -32,15 +32,125 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import abc
+import functools
 
 import six
 
 from ._attributes import DiffStatuses
 
 
-class Print(object):
+class LineArrangements(object):
     """
-    Methods to print a graph as a sort of forest.
+    Sort out nodes and their relationship to each other in printing.
+    """
+
+    @classmethod
+    def node_strings_from_root(
+       cls,
+       info_func,
+       sort_key,
+       graph,
+       node
+    ):
+        """
+        Generates print information about nodes reachable from
+        ``node`` including itself. Assumes that the node is a root and
+        supplies some appropriate defaults.
+
+        :param info_func: a function that yields information about a node
+        :param str sort_key: key to sort on
+        :param `DiGraph` graph: the graph
+        :param `Node` node: the node to print
+
+        :returns: a table of information to be used for further display
+        :rtype: dict of str * object
+
+        Fields in table:
+        * diffstatus - the diffstatus of the edge to this node
+        * indent - the level of indentation
+        * last - whether this node is the last child of its parent
+        * node - the table of information about the node itself
+        * orphan - whether this node has no parents
+        """
+        return cls.node_strings(
+           info_func,
+           sort_key,
+           graph,
+           True,
+           True,
+           None,
+           0,
+           node
+        )
+
+    @classmethod
+    def node_strings(
+       cls,
+       info_func,
+       sort_key,
+       graph,
+       orphan,
+       last,
+       diffstatus,
+       indent,
+       node
+    ):
+        """
+        Generates print information about nodes reachable from
+        ``node`` including itself.
+
+        :param info_func: a function that yields information about a node
+        :param str sort_key: key to sort on
+        :param `DiGraph` graph: the graph
+        :param bool orphan: True if this node has no parents, otherwise False
+        :param bool last: True if this node is the last child, otherwise False
+        :param `DiffStatus` diffstatus: the diffstatus of the edge
+        :param int indent: the indentation level
+        :param `Node` node: the node to print
+
+        :returns: a table of information to be used for further display
+        :rtype: dict of str * object
+
+        Fields in table:
+        * diffstatus - the diffstatus of the edge to this node
+        * indent - the level of indentation
+        * last - whether this node is the last child of its parent
+        * node - the table of information about the node itself
+        * orphan - whether this node has no parents
+        """
+        # pylint: disable=too-many-arguments
+        yield {
+           'diffstatus' : diffstatus,
+           'indent' : indent,
+           'last' : last,
+           'node' : info_func(node),
+           'orphan' : orphan,
+        }
+
+
+        successors = sorted(
+           graph.successors(node),
+           key=lambda x: info_func(x, [sort_key])[sort_key]
+        )
+
+        for succ in successors:
+            lines = cls.node_strings(
+               info_func,
+               sort_key,
+               graph,
+               False,
+               succ is successors[-1],
+               graph[node][succ].get('diffstatus'),
+               indent if orphan else indent + 1,
+               succ
+            )
+            for line in lines:
+                yield line
+
+
+class XformLines(object):
+    """
+    Use information to transform the fields in the line.
     """
 
     _EDGE_STR = "|-"
@@ -76,60 +186,121 @@ class Print(object):
         assert False
 
     @classmethod
-    def node_strings(
-       cls,
-       info_func,
-       fmt_func,
-       sort_key,
-       graph,
-       orphan,
-       last,
-       diffstatus,
-       indent,
-       node
-    ):
+    def calculate_prefix(cls, line_info):
         """
-        Print nodes reachable from ``node`` including itself.
+        Calculate left trailing spaces and edge characters to initial value.
 
-        :param `file` out: the output stream to print to
-        :param info_func: a function that yields information about a node
-        :param fmt_func: a function that helps format the info
-        :param str sort_key: key to sort on
-        :param `DiGraph` graph: the graph
-        :param bool orphan: True if this node has no parents, otherwise False
-        :param bool last: True if this node is the last child, otherwise False
-        :param `DiffStatus` diffstatus: the diffstatus of the edge
-        :param int indent: start printing after ``indent`` spaces
-        :param `Node` node: the node to print
+        :param line_info: a map of information about the line
+        :type line_info: dict of str * object
+
+        :returns: the prefix str for the first column value
+        :rtype: str
         """
-        # pylint: disable=too-many-arguments
-        edge_string = "" if orphan else \
+        edge_string = "" if line_info['orphan'] else \
            cls.format_edge(
-              (cls._LAST_STR if last else cls._EDGE_STR),
-              diffstatus
+              (cls._LAST_STR if line_info['last'] else cls._EDGE_STR),
+              line_info['diffstatus']
            )
-        yield (" " * indent) + edge_string + fmt_func(info_func(node))
+        return " " * (line_info['indent'] * cls.indentation()) + edge_string
+
+    @classmethod
+    def xform(cls, column_headers, lines):
+        """
+        Transform column values and yield just the line info.
+
+        :param column_headers: the column headers
+        :type column_headers: list of str
+        :param lines: information about each line
+        :type lines: dict of str * object
+        """
+        key = column_headers[0]
+
+        for line in lines:
+            line_info = line['node']
+            line_info[key] = cls.calculate_prefix(line) + line_info[key]
+            yield line_info
 
 
-        successors = sorted(
-           graph.successors(node),
-           key=lambda x: info_func(x, [sort_key])[sort_key]
+class Print(object):
+    """
+    Methods to print a list of lines representing a graph.
+    """
+
+    @staticmethod
+    def calculate_widths(column_headers, lines, padding):
+        """
+        Calculate widths of every column.
+
+        :param column_headers: column headers
+        :type column_headers: list of str
+        :param lines: line infos
+        :type lines: list of dict
+        :param int padding: number of spaces to pad on right
+
+        :returns: a table of key/length pairs
+        :rtype: dict of str * int
+        """
+        widths = functools.reduce(
+           lambda d, l: dict((k, max(len(l[k]), d[k])) for k in l),
+           lines,
+           dict((k, len(k)) for k in column_headers)
         )
 
-        for succ in successors:
-            lines = cls.node_strings(
-               info_func,
-               fmt_func,
-               sort_key,
-               graph,
-               False,
-               succ is successors[-1],
-               graph[node][succ].get('diffstatus'),
-               indent if orphan else indent + cls.indentation(),
-               succ
-            )
-            for line in lines:
-                yield line
+        return dict((k, widths[k] + padding) for k in widths)
+
+    @staticmethod
+    def header_str(column_widths, column_headers):
+        """
+        Get the column headers.
+
+        :param column_widths: map of widths of each column
+        :type column_widths: dict of str * int
+        :param column_headers: column headers
+        :type column_headers: list of str
+
+        :returns: the column headers
+        :rtype: str
+        """
+        format_str = "".join(
+           '{:<%d}' % column_widths[k] for k in column_headers
+        )
+        return format_str.format(*column_headers)
+
+    @staticmethod
+    def format_str(column_widths, column_headers):
+        """
+        Format string for every data value.
+
+        :param column_widths: map of widths of each column
+        :type column_widths: dict of str * int
+        :param column_headers: column headers
+        :type column_headers: list of str
+
+        :returns: a format string
+        :rtype: str
+        """
+        return "".join(
+           '{%s:<%d}' % (k, column_widths[k]) for k in column_headers
+        )
+
+    @classmethod
+    def lines(cls, column_headers, lines, padding):
+        """
+        Yield lines to be printed.
+
+        :param column_headers: column headers
+        :type column_headers: list of str
+        :param lines: line infos
+        :type lines: list of dict
+        :param int padding: number of spaces to pad on right
+        """
+        column_widths = cls.calculate_widths(column_headers, lines, padding)
+
+        yield cls.header_str(column_widths, column_headers)
+
+        fmt_str = cls.format_str(column_widths, column_headers)
+        for line in lines:
+            yield fmt_str.format(**line)
 
 
 @six.add_metaclass(abc.ABCMeta)

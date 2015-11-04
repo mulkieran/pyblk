@@ -201,20 +201,21 @@ class PrintGraph(object):
            key=lambda n: line_info.info(n)['NAME']
         )
 
-        for root in roots:
-            lines = _print.Print.node_strings(
+        def node_func(node):
+            """
+            A function that returns the line arrangements for a root node.
+            """
+            return _print.LineArrangements.node_strings_from_root(
                line_info.info,
-               lambda x: x['NAME'],
                'NAME',
                graph,
-               True,
-               True,
-               None,
-               0,
-               root
+               node
             )
-            for line in lines:
-                print(line, end="\n", file=out)
+
+        lines = [l for root in roots for l in node_func(root)]
+        lines = list(_print.XformLines.xform(line_info.supported_keys, lines))
+        for line in _print.Print.lines(line_info.supported_keys, lines, 2):
+            print(line, end="\n", file=out)
 
 
 class DiffGraph(object):

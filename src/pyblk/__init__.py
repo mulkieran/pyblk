@@ -44,8 +44,10 @@ from ._compare import Compare
 from ._compare import Differences
 from ._compare import Matcher
 
+from ._print import LineArrangements
 from ._print import LineInfo
 from ._print import Print
+from ._print import XformLines
 
 from ._structure import DMPartitionGraphs
 from ._structure import PartitionGraphs
