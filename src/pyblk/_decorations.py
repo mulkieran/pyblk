@@ -88,6 +88,56 @@ class UdevProperties(object):
         return {'UDEV' : udev_dict}
 
 
+class SysfsAttributes(object):
+    """
+    Find sysfs attributes for the device nodes of a network graph.
+    """
+
+    @staticmethod
+    def decorated(graph):
+        """
+        Returns elements that get decorated.
+        """
+        node_types = nx.get_node_attributes(graph, 'nodetype')
+        return (k for k in node_types \
+           if node_types[k] is NodeTypes.DEVICE_PATH)
+
+    @staticmethod
+    def attributes(context, element, names):
+        """
+        Get attributes on this element.
+
+        :returns: a map of sysfs attributes
+        :rtype: dict
+        """
+        try:
+            device = pyudev.Device.from_path(context, element)
+        except pyudev.DeviceNotFoundError:
+            return dict()
+
+        attributes = device.attributes
+        return dict((k, attributes[k]) for k in names if k in attributes)
+
+    @classmethod
+    def sysfs_attributes(cls, context, graph, names):
+        """
+        Get sysfs attributes for graph nodes that correspond to devices.
+
+        :param `Context` context: the udev context
+        :param graph: the graph
+        :param names: a list of property keys
+        :type names: list of str
+
+        :returns: dict of property name, node, property value
+        :rtype: dict
+        """
+        attribute_dict = dict()
+        for node in cls.decorated(graph):
+            attribute_dict[node] = cls.attributes(context, node, names)
+
+        return {'SYSFS' : attribute_dict}
+
+
 class DifferenceMarkers(object):
     """
     Difference markers, either added or removed or present.

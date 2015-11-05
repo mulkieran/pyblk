@@ -36,6 +36,7 @@ from collections import defaultdict
 import networkx as nx
 
 from ._decorations import Decorator
+from ._decorations import SysfsAttributes
 from ._decorations import UdevProperties
 
 from . import _compare
@@ -80,8 +81,15 @@ class GenerateGraph(object):
         :param `Context` context: the libudev context
         :param `DiGraph` graph: the graph
         """
+        table = dict()
+
         properties = ['DEVNAME', 'DEVPATH', 'DEVTYPE']
-        table = UdevProperties.udev_properties(context, graph, properties)
+        table.update(UdevProperties.udev_properties(context, graph, properties))
+        attributes = ['size']
+        table.update(
+           SysfsAttributes.sysfs_attributes(context, graph, attributes)
+        )
+
         Decorator.decorate_nodes(graph, table)
 
 
