@@ -57,8 +57,15 @@ class UdevProperties(object):
     def properties(context, element, names):
         """
         Get properties on this element.
+
+        :returns: a map of udev properties
+        :rtype: dict
         """
-        device = pyudev.Device.from_path(context, element)
+        try:
+            device = pyudev.Device.from_path(context, element)
+        except pyudev.DeviceNotFoundError:
+            return dict()
+
         return dict((k, device[k]) for k in names if k in device)
 
     @classmethod

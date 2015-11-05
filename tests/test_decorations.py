@@ -56,7 +56,10 @@ class TestGraphNodeDecorations(object):
            ['DEVPATH']
         )
         devpaths = props['UDEV']
-        assert all(devpaths[k]['DEVPATH'] == k for k in devpaths)
+        assert all(
+           devpaths[k] == dict() or (devpaths[k]['DEVPATH'] == k) \
+              for k in devpaths
+        )
 
 
 class TestDifferenceMarkers(object):
