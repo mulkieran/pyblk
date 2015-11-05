@@ -86,6 +86,31 @@ class Devname(NodeGetter):
 
         return the_func
 
+class Devpath(NodeGetter):
+    """
+    Get a name for a node.
+    """
+    # pylint: disable=too-few-public-methods
+
+    map_requires = ['identifier', 'UDEV']
+
+    @staticmethod
+    def getter(maps):
+
+        def the_func(node):
+            """
+            Calculates a DEVPATH or identifier.
+
+            :param node: the node
+            :returns: the value to display for ``node``
+            :rtype: str or NoneType
+            """
+            udev_info = maps['UDEV'].get(node)
+            return (udev_info and udev_info.get('DEVPATH')) or \
+               maps['identifier'][node]
+
+        return the_func
+
 class Devtype(NodeGetter):
     """
     Get a device type for a node.
@@ -147,5 +172,6 @@ class NodeGetters(object):
     # pylint: disable=too-few-public-methods
 
     DEVNAME = Devname
+    DEVPATH = Devpath
     DEVTYPE = Devtype
     DIFFSTATUS = Diffstatus
