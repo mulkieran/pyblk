@@ -155,9 +155,8 @@ class SimpleLineInfo(_print.LineInfo):
         self.key_map = nx.get_node_attributes(graph, 'identifier')
         self.udev_map = nx.get_node_attributes(graph, 'UDEV')
         self.diffstatus_map = nx.get_node_attributes(graph, 'diffstatus')
-        self.typemap = nx.get_node_attributes(graph, 'nodetype')
 
-    supported_keys = ['NAME', 'DEVTYPE']
+    supported_keys = ['NAME', 'DEVTYPE', 'DIFFSTATUS']
 
     alignment = defaultdict(lambda: '<')
 
@@ -167,18 +166,27 @@ class SimpleLineInfo(_print.LineInfo):
 
         :param `Node` node: the node
         :returns: the value to display for ``node`` for key 'NAME'.
-        :rtype: str
+        :rtype: str or NoneType
         """
         udev_info = self.udev_map.get(node)
         devname = udev_info and udev_info.get('DEVNAME')
+        return devname or self.key_map[node]
+
+    def _func_diff(self, node):
+        """
+        Calculates the diff status for a node.
+
+        :param node: the node
+
+        :returns: the value for ``node`` for key 'DIFFSTATUS'.
+        :rtype: str or NoneType
+        """
         diffstatus = self.diffstatus_map.get(node)
-        name = devname or self.key_map[node]
-        if diffstatus is not None:
-            if diffstatus is _attributes.DiffStatuses.ADDED:
-                name = "<<%s>>" % name
-            elif diffstatus is _attributes.DiffStatuses.REMOVED:
-                name = ">>%s<<" % name
-        return name
+        if diffstatus is _attributes.DiffStatuses.ADDED:
+            return 'ADDED'
+        if diffstatus is _attributes.DiffStatuses.REMOVED:
+            return 'REMOVED'
+        return None
 
     def _func_type(self, node):
         """
@@ -187,7 +195,7 @@ class SimpleLineInfo(_print.LineInfo):
         :param node: the node
 
         :returns: the value to display for ``node`` for key 'DEVTYPE'.
-        :rtype: str
+        :rtype: str or NoneType
         """
         udev_info = self.udev_map.get(node)
         return udev_info and udev_info.get('DEVTYPE')
@@ -197,6 +205,8 @@ class SimpleLineInfo(_print.LineInfo):
             return self._func_name
         if index == 'DEVTYPE':
             return self._func_type
+        if index == 'DIFFSTATUS':
+            return self._func_diff
         return lambda x: None
 
 class PrintGraph(object):
