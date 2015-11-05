@@ -227,6 +227,20 @@ class Print(object):
     """
 
     @staticmethod
+    def stringify(column_headers, lines):
+        """
+        Change all values in ``lines`` to strings.
+
+        :param column_headers: column headers
+        :type column_headers: list of str
+        :param lines: line infos
+        :type lines: list of dict
+        """
+        for line in lines:
+            for header in column_headers:
+                line[header] = str(line[header])
+
+    @staticmethod
     def calculate_widths(column_headers, lines, padding):
         """
         Calculate widths of every column.
@@ -301,6 +315,8 @@ class Print(object):
         :param alignment: alignment for column headers
         :type alignment: dict of str * str {'<', '>', '^'}
         """
+        cls.stringify(column_headers, lines)
+
         column_widths = cls.calculate_widths(column_headers, lines, padding)
 
         yield cls.header_str(column_widths, column_headers, alignment)
