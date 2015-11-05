@@ -49,6 +49,9 @@ from ._print import LineInfo
 from ._print import Print
 from ._print import XformLines
 
+from ._print_helpers import NodeGetter
+from ._print_helpers import NodeGetters
+
 from ._structure import DMPartitionGraphs
 from ._structure import PartitionGraphs
 from ._structure import SpindleGraphs

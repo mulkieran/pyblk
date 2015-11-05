@@ -32,33 +32,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from collections import defaultdict
+
 import pyblk
 
 from ._constants import GRAPH
-
-
-class SimpleLineInfo(pyblk.LineInfo):
-    """
-    Very simple line info class.
-    """
-
-    supported_keys = ['NAME']
-
-    alignment = {'NAME' : '<'}
-
-    def _func_name(self, node):
-        # pylint: disable=unused-argument
-        """
-        A very simple function.
-
-        :param node: a node
-        """
-        return 'a node'
-
-    def func_table(self, key):
-        if key == 'NAME':
-            return self._func_name
-        return lambda x: None
 
 class TestGraphPrint(object):
     """
@@ -72,7 +50,12 @@ class TestGraphPrint(object):
         Verify that the number of strings is at least a node's out-degree.
         """
         node = max(GRAPH.nodes(), key=GRAPH.out_degree)
-        line_info = SimpleLineInfo()
+        line_info = pyblk.LineInfo(
+           GRAPH,
+           ['NAME'],
+           defaultdict(lambda: '<'),
+           {'NAME' : pyblk.NodeGetters.DEVNAME}
+        )
         lines = pyblk.LineArrangements.node_strings_from_root(
            line_info.info,
            'NAME',
@@ -82,11 +65,11 @@ class TestGraphPrint(object):
         lines = list(lines)
         assert len(lines) >= GRAPH.out_degree(node)
 
-        xformed = pyblk.XformLines.xform(line_info.supported_keys, lines)
+        xformed = pyblk.XformLines.xform(line_info.keys, lines)
         assert len(list(xformed)) == len(lines)
 
         final = pyblk.Print.lines(
-           line_info.supported_keys,
+           line_info.keys,
            xformed,
            2,
            line_info.alignment

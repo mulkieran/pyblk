@@ -38,10 +38,10 @@ import networkx as nx
 from ._decorations import Decorator
 from ._decorations import UdevProperties
 
-from . import _attributes
 from . import _compare
 from . import _display
 from . import _print
+from . import _print_helpers
 from . import _structure
 from . import _utils
 from . import _write
@@ -141,73 +141,6 @@ class DisplayGraph(object):
         _display.GraphTransformers.xform(dot_graph, xformers)
         return dot_graph
 
-class SimpleLineInfo(_print.LineInfo):
-    """
-    This class just generates the name by which the device is displayed.
-    """
-
-    def __init__(self, graph):
-        """
-        Constructor.
-
-        :param `DiGraph` graph: the graph
-        """
-        self.key_map = nx.get_node_attributes(graph, 'identifier')
-        self.udev_map = nx.get_node_attributes(graph, 'UDEV')
-        self.diffstatus_map = nx.get_node_attributes(graph, 'diffstatus')
-
-    supported_keys = ['NAME', 'DEVTYPE', 'DIFFSTATUS']
-
-    alignment = defaultdict(lambda: '<')
-
-    def _func_name(self, node):
-        """
-        Calculates the field for key NAME.
-
-        :param `Node` node: the node
-        :returns: the value to display for ``node`` for key 'NAME'.
-        :rtype: str or NoneType
-        """
-        udev_info = self.udev_map.get(node)
-        devname = udev_info and udev_info.get('DEVNAME')
-        return devname or self.key_map[node]
-
-    def _func_diff(self, node):
-        """
-        Calculates the diff status for a node.
-
-        :param node: the node
-
-        :returns: the value for ``node`` for key 'DIFFSTATUS'.
-        :rtype: str or NoneType
-        """
-        diffstatus = self.diffstatus_map.get(node)
-        if diffstatus is _attributes.DiffStatuses.ADDED:
-            return 'ADDED'
-        if diffstatus is _attributes.DiffStatuses.REMOVED:
-            return 'REMOVED'
-        return None
-
-    def _func_type(self, node):
-        """
-        Calculates the field for key DEVTYPE.
-
-        :param node: the node
-
-        :returns: the value to display for ``node`` for key 'DEVTYPE'.
-        :rtype: str or NoneType
-        """
-        udev_info = self.udev_map.get(node)
-        return udev_info and udev_info.get('DEVTYPE')
-
-    def func_table(self, index):
-        if index == 'NAME':
-            return self._func_name
-        if index == 'DEVTYPE':
-            return self._func_type
-        if index == 'DIFFSTATUS':
-            return self._func_diff
-        return lambda x: None
 
 class PrintGraph(object):
     """
@@ -223,7 +156,16 @@ class PrintGraph(object):
         :param `file` out: print destination
         :param `DiGraph` graph: the graph
         """
-        line_info = SimpleLineInfo(graph)
+        line_info = _print.LineInfo(
+           graph,
+           ['NAME', 'DEVTYPE', 'DIFFSTATUS'],
+           defaultdict(lambda: '<'),
+           {
+              'NAME' : _print_helpers.NodeGetters.DEVNAME,
+              'DEVTYPE': _print_helpers.NodeGetters.DEVTYPE,
+              'DIFFSTATUS': _print_helpers.NodeGetters.DIFFSTATUS
+           }
+        )
 
         roots = sorted(
            _utils.GraphUtils.get_roots(graph),
@@ -242,9 +184,9 @@ class PrintGraph(object):
             )
 
         lines = [l for root in roots for l in node_func(root)]
-        lines = list(_print.XformLines.xform(line_info.supported_keys, lines))
+        lines = list(_print.XformLines.xform(line_info.keys, lines))
         lines = _print.Print.lines(
-           line_info.supported_keys,
+           line_info.keys,
            lines,
            2,
            line_info.alignment

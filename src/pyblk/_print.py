@@ -31,10 +31,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import abc
 import functools
 
-import six
+import networkx as nx
 
 from ._attributes import DiffStatuses
 
@@ -326,31 +325,22 @@ class Print(object):
             yield fmt_str.format(**line)
 
 
-@six.add_metaclass(abc.ABCMeta)
 class LineInfo(object):
     """
-    Abstract parent class of classes that generate information for a
-    single line.
+    Class that generates info for a single line.
     """
+    # pylint: disable=too-few-public-methods
 
-    supported_keys = abc.abstractproperty(
-       doc="the keys this class supports"
-    )
-
-    alignment = abc.abstractproperty(
-       doc='alignment for each key'
-    )
-
-    @abc.abstractmethod
-    def func_table(self, key): # pragma: no cover
+    def __init__(self, graph, keys, alignment, getters):
         """
-        Calculate the function for a particular index.
-
-        :param str key: the key
-        :returns: a function to apply to a node for ``key``
-        :rtype: `Node` -> str or `Node` -> NoneType
+        Initializer.
         """
-        raise NotImplementedError()
+        self.keys = keys
+        self.alignment = alignment
+
+        map_requires = set(r for g in getters for r in getters[g].map_requires)
+        maps = dict((r, nx.get_node_attributes(graph, r)) for r in map_requires)
+        self._funcs = dict((g, getters[g].getter(maps)) for g in getters)
 
     def info(self, node, keys=None):
         """
@@ -368,5 +358,5 @@ class LineInfo(object):
         Return None for key in keys that can not be satisfied.
         """
         if keys is None:
-            keys = self.supported_keys
-        return dict((k, self.func_table(k)(node)) for k in keys)
+            keys = self.keys
+        return dict((k, self._funcs.get(k, lambda n: None)(node)) for k in keys)
