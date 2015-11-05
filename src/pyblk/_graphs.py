@@ -35,8 +35,6 @@ from collections import defaultdict
 
 import networkx as nx
 
-from ._attributes import NodeTypes
-
 from ._decorations import Decorator
 from ._decorations import UdevProperties
 
@@ -159,7 +157,7 @@ class SimpleLineInfo(_print.LineInfo):
         self.diffstatus_map = nx.get_node_attributes(graph, 'diffstatus')
         self.typemap = nx.get_node_attributes(graph, 'nodetype')
 
-    supported_keys = ['NAME', 'TYPE']
+    supported_keys = ['NAME', 'DEVTYPE']
 
     alignment = defaultdict(lambda: '<')
 
@@ -184,24 +182,20 @@ class SimpleLineInfo(_print.LineInfo):
 
     def _func_type(self, node):
         """
-        Calculates the field for key TYPE.
+        Calculates the field for key DEVTYPE.
 
         :param node: the node
 
-        :returns: the value to display for ``node`` for key 'TYPE'.
+        :returns: the value to display for ``node`` for key 'DEVTYPE'.
         :rtype: str
         """
-        nodetype = self.typemap[node]
-        if nodetype is NodeTypes.WWN:
-            return "spindle"
-
         udev_info = self.udev_map.get(node)
-        return udev_info and udev_info.get('DEVTYPE', 'unknown')
+        return udev_info and udev_info.get('DEVTYPE')
 
     def func_table(self, index):
         if index == 'NAME':
             return self._func_name
-        if index == 'TYPE':
+        if index == 'DEVTYPE':
             return self._func_type
         return lambda x: None
 
