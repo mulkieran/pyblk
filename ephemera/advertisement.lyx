@@ -93,7 +93,7 @@ pyblk offers some additional features which we expect would prove very useful
  Storage configurations are always DAGS (directed acyclic graphs).
  lsblk's default display prints the storage graph as a list of trees using
  a straightforward textual representation.
- pyblk offers the following significant features beyond those that lsdev
+ pyblk offers the following significant features beyond those that lsblk
  offers.
  First, it is able to write the graph in a structured format that can easily
  be retrieved and further processed.
@@ -317,142 +317,147 @@ status open
 
 \begin_layout Plain Layout
 
-0x600508b1001c79ade5178f0626caaa9c
+NAME                                DEVTYPE
 \end_layout
 
 \begin_layout Plain Layout
 
-|--/dev/sda
+0x600508b1001c79ade5178f0626caaa9c  None       
 \end_layout
 
 \begin_layout Plain Layout
 
-   |--/dev/sda1
+`-/dev/sda                          disk       
 \end_layout
 
 \begin_layout Plain Layout
 
-   |--/dev/sda2
+  |-/dev/sda1                       partition       
 \end_layout
 
 \begin_layout Plain Layout
 
-   |--/dev/sda3
+  |-/dev/sda2                       partition        
 \end_layout
 
 \begin_layout Plain Layout
 
-      |--/dev/dm-0
+  `-/dev/sda3                       partition       
 \end_layout
 
 \begin_layout Plain Layout
 
-      |--/dev/dm-1
+    |-/dev/dm-0                     disk        
 \end_layout
 
 \begin_layout Plain Layout
 
-      |--/dev/dm-25
+    |-/dev/dm-1                     disk        
 \end_layout
 
 \begin_layout Plain Layout
 
-0xb2590ae94ee25001
+    `-/dev/dm-26                    disk       
 \end_layout
 
 \begin_layout Plain Layout
 
-|--/dev/sdb
+0xb2590ae94ee25001                  None             
 \end_layout
 
 \begin_layout Plain Layout
 
-   |--/dev/dm-13
+|-/dev/sdb                          disk              
 \end_layout
 
 \begin_layout Plain Layout
 
-      |--/dev/dm-22
+  `-/dev/dm-6                       disk             
 \end_layout
 
 \begin_layout Plain Layout
 
-         |--/dev/md126
+    `-/dev/dm-21                    disk              
 \end_layout
 
 \begin_layout Plain Layout
 
-            |--/dev/dm-29
+      `-/dev/md126                  disk               
 \end_layout
 
 \begin_layout Plain Layout
 
-               |--/dev/dm-30
+        `-/dev/dm-30                disk               
 \end_layout
 
 \begin_layout Plain Layout
 
-                  |--/dev/dm-31
+          `-/dev/dm-31              disk              
 \end_layout
 
 \begin_layout Plain Layout
 
-                     |--/dev/dm-32
+            `-/dev/dm-32            disk              
 \end_layout
 
 \begin_layout Plain Layout
 
-                     |--/dev/dm-33
+              |-/dev/dm-33          disk              
 \end_layout
 
 \begin_layout Plain Layout
 
-0xfb1560374ee25001
+              `-/dev/dm-34          disk        
 \end_layout
 
 \begin_layout Plain Layout
 
-|--/dev/sdc
+0xfb1560374ee25001                  None      
 \end_layout
 
 \begin_layout Plain Layout
 
-   |--/dev/dm-4
+|-/dev/sdc                          disk        
 \end_layout
 
 \begin_layout Plain Layout
 
-      |--/dev/dm-21
+  `-/dev/dm-10                      disk        
 \end_layout
 
 \begin_layout Plain Layout
 
-         |--/dev/md126
+    `-/dev/dm-24                    disk        
 \end_layout
 
 \begin_layout Plain Layout
 
-            |--/dev/dm-29
+      `-/dev/md126                  disk        
 \end_layout
 
 \begin_layout Plain Layout
 
-               |--/dev/dm-30
+        `-/dev/dm-30                disk        
 \end_layout
 
 \begin_layout Plain Layout
 
-                  |--/dev/dm-31
+          `-/dev/dm-31              disk       
 \end_layout
 
 \begin_layout Plain Layout
 
-                     |--/dev/dm-32
+            `-/dev/dm-32            disk       
 \end_layout
 
 \begin_layout Plain Layout
 
-                     |--/dev/dm-33
+              |-/dev/dm-33          disk     
+\end_layout
+
+\begin_layout Plain Layout
+
+              `-/dev/dm-34          disk
 \end_layout
 
 \begin_layout Plain Layout
@@ -467,8 +472,7 @@ status open
 
 \begin_layout Standard
 More importantly, observe that pyblk goes further than lsblk in capturing
- a significant relationship, that of disk devices with their respective
- LUNs.
+ a significant relationship, that of paths with their respective devices.
  This information is certainly useful to a storage administrator in tracking
  a particular physical disk
 \begin_inset Foot
@@ -492,9 +496,10 @@ Note that several devices appear more than once.
  has more than one parent.
  For both devices, it is possible to invert the display so that the roots
  of each tree are the devices at the top of the storage stack and the leaves
- are the device nodes or LUNs.
- This does not eliminate the redundancy, it just shows up in a different
- way.
+ are the device nodes (in the case of lsblk) or physical devices (typical
+ with pyblk).
+ This does not eliminate the redundancy, it just causes the redundancy to
+ appear elsewhere in the graph.
 \end_layout
 
 \begin_layout Standard
@@ -516,13 +521,21 @@ Now, imagine that there has been some incident or change in behavior, and
 
 \begin_layout Standard
 For example, consider two graphs of storage generated at different times.
- Our original graph requires 215 lines to display, the new one requires
- 246 lines.
- Clearly they represent different storage configurations and the administrator
- is likely to discover the differences by a visual inspection of the graph.
+ The first graph requires 215 lines to display, the new one requires 246
+ lines.
+ Clearly they represent different storage configurations and the textual
+ output is just short eenough that the administrator is likely to discover
+ the differences by a visual inspection of the graph.
  However, pyblk offers the abiity to do a simple comparison, and the administrat
 or would instantly see the change by deploying its diff tool.
  Some sample output from the tool is shown below.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -533,222 +546,227 @@ status open
 
 \begin_layout Plain Layout
 
-0x600508b1001c79ade5178f0626caaa9c
+NAME                                DEVTYPE    DIFFSTATUS
 \end_layout
 
 \begin_layout Plain Layout
 
-|--/dev/sda
+0x600508b1001c79ade5178f0626caaa9c  None       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-   |--/dev/sda1
+`-/dev/sda                          disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-   |--/dev/sda2
+  |-/dev/sda1                       partition  None        
 \end_layout
 
 \begin_layout Plain Layout
 
-   |--/dev/sda3
+  |-/dev/sda2                       partition  None        
 \end_layout
 
 \begin_layout Plain Layout
 
-      |--/dev/dm-0
+  `-/dev/sda3                       partition  None        
 \end_layout
 
 \begin_layout Plain Layout
 
-      |--/dev/dm-1
+    |-/dev/dm-0                     disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-      |--/dev/dm-25
+    |-/dev/dm-1                     disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-0xb2590ae94ee25001
+    `-/dev/dm-25                    disk       None  
 \end_layout
 
 \begin_layout Plain Layout
 
-|--/dev/sdb
+0xb2590ae94ee25001                  None       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-   |--/dev/dm-13
+|-/dev/sdb                          disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-      |--/dev/dm-22
+  |-/dev/dm-13                      disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-         |--/dev/md126
+    `-/dev/dm-22                    disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-            |--/dev/dm-29
+      `-/dev/md126                  disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-               |--/dev/dm-30
+        `-/dev/dm-29                disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-                  |--/dev/dm-31
+          `-/dev/dm-30              disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-                     |--/dev/dm-32
+            `-/dev/dm-31            disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-                     |--/dev/dm-33
+              |-/dev/dm-32          disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-   |--<</dev/sdb1>>
+              `-/dev/dm-33          disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-      |--/dev/dm-22
+  `+/dev/sdb1                       partition  ADDED       
 \end_layout
 
 \begin_layout Plain Layout
 
-         |--/dev/md126
+    `+/dev/dm-22                    disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-            |--/dev/dm-29
+      `-/dev/md126                  disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-               |--/dev/dm-30
+        `-/dev/dm-29                disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-                  |--/dev/dm-31
+          `-/dev/dm-30              disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-                     |--/dev/dm-32
+            `-/dev/dm-31            disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-                     |--/dev/dm-33
+              |-/dev/dm-32          disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-0xfb1560374ee25001
+              `-/dev/dm-33          disk       Non
 \end_layout
 
 \begin_layout Plain Layout
 
-|--/dev/sdc
+0xfb1560374ee25001                  None       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-   |--/dev/dm-4
+|-/dev/sdc                          disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-      |--/dev/dm-21
+  |-/dev/dm-4                       disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-         |--/dev/md126
+    `-/dev/dm-21                    disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-            |--/dev/dm-29
+      `-/dev/md126                  disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-               |--/dev/dm-30
+        `-/dev/dm-29                disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-                  |--/dev/dm-31
+          `-/dev/dm-30              disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-                     |--/dev/dm-32
+            `-/dev/dm-31            disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-                     |--/dev/dm-33
+              |-/dev/dm-32          disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-   |--<</dev/sdc1>>
+              `-/dev/dm-33          disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-      |--/dev/dm-21
+  `+/dev/sdc1                       partition  ADDED       
 \end_layout
 
 \begin_layout Plain Layout
 
-         |--/dev/md126
+    `+/dev/dm-21                    disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-            |--/dev/dm-29
+      `-/dev/md126                  disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-               |--/dev/dm-30
+        `-/dev/dm-29                disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-                  |--/dev/dm-31
+          `-/dev/dm-30              disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-                     |--/dev/dm-32
+            `-/dev/dm-31            disk       None        
 \end_layout
 
 \begin_layout Plain Layout
 
-                     |--/dev/dm-33
+              |-/dev/dm-32          disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+              `-/dev/dm-33          disk       None
 \end_layout
 
 \begin_layout Plain Layout
@@ -762,10 +780,22 @@ status open
 \end_layout
 
 \begin_layout Standard
-The newly added nodes are marked by angle brackets.
- What has happened, it turns out, is that ``parted --list`` has been run,
- with the result that the partition device nodes, previously removed by
- multipath udev rules, have been re-created by parted.
+The word 
+\begin_inset Quotes eld
+\end_inset
+
+ADDED
+\begin_inset Quotes erd
+\end_inset
+
+ in the diffstatus column indicates that the device has been added to the
+ graph.
+ What has happened, it turns out, is that 
+\family typewriter
+parted --list
+\family default
+ has been run, with the result that the partition device nodes, previously
+ removed by multipath udev rules, have been re-created by parted.
 \end_layout
 
 \begin_layout Standard
