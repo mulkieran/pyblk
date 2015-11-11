@@ -164,14 +164,17 @@ class PrintGraph(object):
         :param `file` out: print destination
         :param `DiGraph` graph: the graph
         """
+        justification = defaultdict(lambda: '<')
+        justification['SIZE'] = '>'
         line_info = _print.LineInfo(
            graph,
-           ['NAME', 'DEVTYPE', 'DIFFSTATUS'],
-           defaultdict(lambda: '<'),
+           ['NAME', 'DEVTYPE', 'DIFFSTATUS', 'SIZE'],
+           justification,
            {
               'NAME' : _print_helpers.NodeGetters.DEVNAME,
               'DEVTYPE': _print_helpers.NodeGetters.DEVTYPE,
-              'DIFFSTATUS': _print_helpers.NodeGetters.DIFFSTATUS
+              'DIFFSTATUS': _print_helpers.NodeGetters.DIFFSTATUS,
+              'SIZE': _print_helpers.NodeGetters.SIZE
            }
         )
 
