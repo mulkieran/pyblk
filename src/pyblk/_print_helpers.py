@@ -167,6 +167,33 @@ class Diffstatus(NodeGetter):
         return the_func
 
 
+class Dmname(NodeGetter):
+    """
+    Get a size for a node.
+    """
+    # pylint: disable=too-few-public-methods
+
+    map_requires = ['SYSFS']
+
+    @staticmethod
+    def getter(maps):
+
+        def the_func(node):
+            """
+            Calculates the dm-name.
+
+            :param node: the node
+            :returns: the value to display for ``node``
+            :rtype: str or NoneType
+            """
+            sysfs = maps['SYSFS'].get(node)
+            if sysfs is None:
+                return None
+            return sysfs.get('dm/name')
+
+        return the_func
+
+
 class Size(NodeGetter):
     """
     Get a size for a node.
@@ -208,4 +235,5 @@ class NodeGetters(object):
     DEVPATH = Devpath
     DEVTYPE = Devtype
     DIFFSTATUS = Diffstatus
+    DMNAME = Dmname
     SIZE = Size

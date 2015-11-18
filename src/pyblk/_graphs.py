@@ -85,7 +85,7 @@ class GenerateGraph(object):
 
         properties = ['DEVNAME', 'DEVPATH', 'DEVTYPE']
         table.update(UdevProperties.udev_properties(context, graph, properties))
-        attributes = ['size']
+        attributes = ['size', 'dm/name']
         table.update(
            SysfsAttributes.sysfs_attributes(context, graph, attributes)
         )
@@ -168,10 +168,11 @@ class PrintGraph(object):
         justification['SIZE'] = '>'
         line_info = _print.LineInfo(
            graph,
-           ['NAME', 'DEVTYPE', 'DIFFSTATUS', 'SIZE'],
+           ['DEVNAME', 'DMNAME', 'DEVTYPE', 'DIFFSTATUS', 'SIZE'],
            justification,
            {
-              'NAME' : _print_helpers.NodeGetters.DEVNAME,
+              'DEVNAME' : _print_helpers.NodeGetters.DEVNAME,
+              'DMNAME' : _print_helpers.NodeGetters.DMNAME,
               'DEVTYPE': _print_helpers.NodeGetters.DEVTYPE,
               'DIFFSTATUS': _print_helpers.NodeGetters.DIFFSTATUS,
               'SIZE': _print_helpers.NodeGetters.SIZE
@@ -180,7 +181,7 @@ class PrintGraph(object):
 
         roots = sorted(
            _utils.GraphUtils.get_roots(graph),
-           key=lambda n: line_info.info(n)['NAME']
+           key=lambda n: line_info.info(n)['DEVNAME']
         )
 
         def node_func(node):
