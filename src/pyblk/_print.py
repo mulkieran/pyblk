@@ -272,7 +272,7 @@ class XformLines(object):
         :param column_headers: the column headers
         :type column_headers: list of str
         :param lines: information about each line
-        :type lines: dict of str * object
+        :type lines: dict of str * str
         """
         key = column_headers[0]
 
@@ -286,20 +286,6 @@ class Print(object):
     """
     Methods to print a list of lines representing a graph.
     """
-
-    @staticmethod
-    def stringify(column_headers, lines):
-        """
-        Change all values in ``lines`` to strings.
-
-        :param column_headers: column headers
-        :type column_headers: list of str
-        :param lines: line infos
-        :type lines: list of dict
-        """
-        for line in lines:
-            for header in column_headers:
-                line[header] = str(line[header])
 
     @staticmethod
     def calculate_widths(column_headers, lines, padding):
@@ -376,8 +362,6 @@ class Print(object):
         :param alignment: alignment for column headers
         :type alignment: dict of str * str {'<', '>', '^'}
         """
-        cls.stringify(column_headers, lines)
-
         column_widths = cls.calculate_widths(column_headers, lines, padding)
 
         yield cls.header_str(column_widths, column_headers, alignment)
