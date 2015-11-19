@@ -54,7 +54,7 @@ class TestGraphPrint(object):
            GRAPH,
            ['NAME'],
            defaultdict(lambda: '<'),
-           {'NAME' : pyblk.NodeGetters.DEVNAME}
+           {'NAME' : [pyblk.NodeGetters.DEVNAME]}
         )
         lines = pyblk.LineArrangements.node_strings_from_root(
            line_info.info,

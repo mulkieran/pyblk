@@ -166,22 +166,25 @@ class PrintGraph(object):
         """
         justification = defaultdict(lambda: '<')
         justification['SIZE'] = '>'
+        name_funcs = [
+           _print_helpers.NodeGetters.DMNAME,
+           _print_helpers.NodeGetters.DEVNAME
+        ]
         line_info = _print.LineInfo(
            graph,
-           ['DEVNAME', 'DMNAME', 'DEVTYPE', 'DIFFSTATUS', 'SIZE'],
+           ['NAME', 'DEVTYPE', 'DIFFSTATUS', 'SIZE'],
            justification,
            {
-              'DEVNAME' : _print_helpers.NodeGetters.DEVNAME,
-              'DMNAME' : _print_helpers.NodeGetters.DMNAME,
-              'DEVTYPE': _print_helpers.NodeGetters.DEVTYPE,
-              'DIFFSTATUS': _print_helpers.NodeGetters.DIFFSTATUS,
-              'SIZE': _print_helpers.NodeGetters.SIZE
+              'NAME' : name_funcs,
+              'DEVTYPE': [_print_helpers.NodeGetters.DEVTYPE],
+              'DIFFSTATUS': [_print_helpers.NodeGetters.DIFFSTATUS],
+              'SIZE': [_print_helpers.NodeGetters.SIZE]
            }
         )
 
         roots = sorted(
            _utils.GraphUtils.get_roots(graph),
-           key=lambda n: line_info.info(n)['DEVNAME']
+           key=lambda n: line_info.info(n)['NAME']
         )
 
         def node_func(node):

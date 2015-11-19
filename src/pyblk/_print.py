@@ -334,13 +334,54 @@ class LineInfo(object):
     def __init__(self, graph, keys, alignment, getters):
         """
         Initializer.
+
+        :param graph: the relevant networkx graph
+        :param keys: a list of keys which are also column headings
+        :param alignment: alignment for column headers
+        :type alignment: dict of str * str {'<', '>', '^'}
+        :param getters: getters for each column, indexed by column name
+        :type getters: map of str * NodeGetter
         """
         self.keys = keys
         self.alignment = alignment
 
-        map_requires = set(r for g in getters for r in getters[g].map_requires)
+        # all getters required for all columns
+        getter_classes = set(g for name in getters for g in getters[name])
+
+        # all lookups they depend on
+        map_requires = set(r for g in getter_classes for r in g.map_requires)
+
+        # map from requires to a dict of attribute values
         maps = dict((r, nx.get_node_attributes(graph, r)) for r in map_requires)
-        self._funcs = dict((g, getters[g].getter(maps)) for g in getters)
+
+        def composer(funcs):
+            """
+            Composes a list of funcs into a single func.
+
+            :param funcs: the functions
+            :type funcs: list of (* -> (str or NoneType))
+
+            :returns: a function to find a value for a node
+            :rtype: * -> (str or NoneType)
+            """
+            def the_func(node):
+                """
+                Returns a value for the node.
+                :param * node: a node
+                :returns: a value
+                :rtype: str or NoneType
+                """
+                return functools.reduce(
+                   lambda v, f: v if v is not None else f(node),
+                   funcs,
+                   None
+                )
+            return the_func
+
+        # functions, indexed by column name
+        self._funcs = dict(
+           (k, composer([g.getter(maps) for g in getters[k]])) for k in keys
+        )
 
     def info(self, node, keys=None):
         """
