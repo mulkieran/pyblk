@@ -69,7 +69,7 @@ class Devname(NodeGetter):
     """
     # pylint: disable=too-few-public-methods
 
-    map_requires = ['identifier', 'UDEV']
+    map_requires = ['UDEV']
 
     @staticmethod
     def getter(maps):
@@ -83,8 +83,7 @@ class Devname(NodeGetter):
             :rtype: str or NoneType
             """
             udev_info = maps['UDEV'].get(node)
-            return (udev_info and udev_info.get('DEVNAME')) or \
-               maps['identifier'][node]
+            return udev_info and udev_info.get('DEVNAME')
 
         return the_func
 
@@ -94,7 +93,7 @@ class Devpath(NodeGetter):
     """
     # pylint: disable=too-few-public-methods
 
-    map_requires = ['identifier', 'UDEV']
+    map_requires = ['UDEV']
 
     @staticmethod
     def getter(maps):
@@ -108,8 +107,7 @@ class Devpath(NodeGetter):
             :rtype: str or NoneType
             """
             udev_info = maps['UDEV'].get(node)
-            return (udev_info and udev_info.get('DEVPATH')) or \
-               maps['identifier'][node]
+            return udev_info and udev_info.get('DEVPATH')
 
         return the_func
 
@@ -194,6 +192,30 @@ class Dmname(NodeGetter):
         return the_func
 
 
+class Identifier(NodeGetter):
+    """
+    Get a name for a node.
+    """
+    # pylint: disable=too-few-public-methods
+
+    map_requires = ['identifier']
+
+    @staticmethod
+    def getter(maps):
+
+        def the_func(node):
+            """
+            Calculates an identifier.
+
+            :param node: the node
+            :returns: the value to display for ``node``
+            :rtype: str or NoneType
+            """
+            return maps['identifier'][node]
+
+        return the_func
+
+
 class Size(NodeGetter):
     """
     Get a size for a node.
@@ -236,4 +258,5 @@ class NodeGetters(object):
     DEVTYPE = Devtype
     DIFFSTATUS = Diffstatus
     DMNAME = Dmname
+    IDENTIFIER = Identifier
     SIZE = Size

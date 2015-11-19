@@ -168,7 +168,8 @@ class PrintGraph(object):
         justification['SIZE'] = '>'
         name_funcs = [
            _print_helpers.NodeGetters.DMNAME,
-           _print_helpers.NodeGetters.DEVNAME
+           _print_helpers.NodeGetters.DEVNAME,
+           _print_helpers.NodeGetters.IDENTIFIER
         ]
         line_info = _print.LineInfo(
            graph,
