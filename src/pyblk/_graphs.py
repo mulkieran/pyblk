@@ -183,9 +183,11 @@ class PrintGraph(object):
         )
 
         lines = _print.LineArrangements.node_strings_from_graph(
-           line_info.info,
-           lambda k, v: str(v),
-           'NAME',
+           _print.LineArrangementsConfig(
+              line_info.info,
+              lambda k, v: str(v),
+              'NAME'
+           ),
            graph
         )
 

@@ -40,27 +40,39 @@ from ._utils import GraphUtils
 from ._utils import SortingUtils
 
 
+class LineArrangementsConfig(object):
+    """
+    Class that represents the configuration for LineArrangements methods.
+    """
+    # pylint: disable=too-few-public-methods
+
+    def __init__(self, info_func, conversion_func, sort_key):
+        """
+        Initializer.
+
+        :param info_func: a function that returns information for a node
+        :type info_func: see LineInfo.info
+        :param conversion_func: converts info_func values to str
+        :type conversion_func: (str * object) -> str
+        :param str sort_key: the key/column name to sort on
+        """
+        self.info_func = info_func
+        self.conversion_func = conversion_func
+        self.sort_key = sort_key
+
+
 class LineArrangements(object):
     """
     Sort out nodes and their relationship to each other in printing.
     """
 
     @classmethod
-    def node_strings_from_graph(
-       cls,
-       info_func,
-       conversion_func,
-       sort_key,
-       graph
-    ):
+    def node_strings_from_graph(cls, config, graph):
         """
         Generates print information about nodes in graph.
         Starts from the roots of the graph.
 
-        :param info_func: a function that yields information about a node
-        :param conversion_func: a function converts values
-        :type conversion_func: str * object -> str
-        :param str sort_key: key to sort on
+        :param LineArrangementsConfig: config
         :param `DiGraph` graph: the graph
 
         :returns: a table of information to be used for further display
@@ -76,7 +88,7 @@ class LineArrangements(object):
         roots = sorted(
            GraphUtils.get_roots(graph),
            key=SortingUtils.str_key_func_gen(
-              lambda n: info_func(n, [sort_key])[sort_key]
+              lambda n: config.info_func(n, [config.sort_key])[config.sort_key]
            )
         )
 
@@ -85,9 +97,7 @@ class LineArrangements(object):
             A function that returns the line arrangements for a root node.
             """
             return cls.node_strings_from_root(
-               info_func,
-               conversion_func,
-               sort_key,
+               config,
                graph,
                node
             )
@@ -95,23 +105,13 @@ class LineArrangements(object):
         return [l for root in roots for l in node_func(root)]
 
     @classmethod
-    def node_strings_from_root(
-       cls,
-       info_func,
-       conversion_func,
-       sort_key,
-       graph,
-       node
-    ):
+    def node_strings_from_root(cls, config, graph, node):
         """
         Generates print information about nodes reachable from
         ``node`` including itself. Assumes that the node is a root and
         supplies some appropriate defaults.
 
-        :param info_func: a function that yields information about a node
-        :param conversion_func: a function converts values
-        :type conversion_func: str * object -> str
-        :param str sort_key: key to sort on
+        :param LineArrangementsConfig: config
         :param `DiGraph` graph: the graph
         :param `Node` node: the node to print
 
@@ -125,11 +125,8 @@ class LineArrangements(object):
         * node - the table of information about the node itself
         * orphan - whether this node has no parents
         """
-        # pylint: disable=too-many-arguments
         return cls.node_strings(
-           info_func,
-           conversion_func,
-           sort_key,
+           config,
            graph,
            True,
            True,
@@ -141,9 +138,7 @@ class LineArrangements(object):
     @classmethod
     def node_strings(
        cls,
-       info_func,
-       conversion_func,
-       sort_key,
+       config,
        graph,
        orphan,
        last,
@@ -155,10 +150,7 @@ class LineArrangements(object):
         Generates print information about nodes reachable from
         ``node`` including itself.
 
-        :param info_func: a function that yields information about a node
-        :param conversion_func: function that converts a datum to a str
-        :type conversion_func: (str * object) -> str
-        :param str sort_key: key to sort on
+        :param LineArrangementsConfig: config
         :param `DiGraph` graph: the graph
         :param bool orphan: True if this node has no parents, otherwise False
         :param bool last: True if this node is the last child, otherwise False
@@ -181,7 +173,7 @@ class LineArrangements(object):
            'diffstatus' : diffstatus,
            'indent' : indent,
            'last' : last,
-           'node' : info_func(node, keys=None, conv=conversion_func),
+           'node' : config.info_func(node, keys=None, conv=config.conversion_func),
            'orphan' : orphan,
         }
 
@@ -189,15 +181,13 @@ class LineArrangements(object):
         successors = sorted(
            graph.successors(node),
            key=SortingUtils.str_key_func_gen(
-              lambda x: info_func(x, [sort_key])[sort_key]
+              lambda x: config.info_func(x, [config.sort_key])[config.sort_key]
            )
         )
 
         for succ in successors:
             lines = cls.node_strings(
-               info_func,
-               conversion_func,
-               sort_key,
+               config,
                graph,
                False,
                succ is successors[-1],

@@ -49,17 +49,30 @@ class TestGraphPrint(object):
         """
         Verify that the number of strings is at least a node's out-degree.
         """
-        node = max(GRAPH.nodes(), key=GRAPH.out_degree)
         line_info = pyblk.LineInfo(
            GRAPH,
            ['NAME'],
            defaultdict(lambda: '<'),
            {'NAME' : [pyblk.NodeGetters.DEVNAME]}
         )
+        lines = pyblk.LineArrangements.node_strings_from_graph(
+           pyblk.LineArrangementsConfig(
+              line_info.info,
+              lambda k, v: str(v),
+              'NAME'
+           ),
+           GRAPH
+        )
+        lines = list(lines)
+        assert len(lines) >= len(GRAPH)
+
+        node = max(GRAPH.nodes(), key=GRAPH.out_degree)
         lines = pyblk.LineArrangements.node_strings_from_root(
-           line_info.info,
-           lambda k, v: str(v),
-           'NAME',
+           pyblk.LineArrangementsConfig(
+              line_info.info,
+              lambda k, v: str(v),
+              'NAME'
+           ),
            GRAPH,
            node
         )
