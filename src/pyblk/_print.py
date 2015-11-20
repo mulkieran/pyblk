@@ -46,12 +46,20 @@ class LineArrangements(object):
     """
 
     @classmethod
-    def node_strings_from_graph(cls, info_func, sort_key, graph):
+    def node_strings_from_graph(
+       cls,
+       info_func,
+       conversion_func,
+       sort_key,
+       graph
+    ):
         """
         Generates print information about nodes in graph.
         Starts from the roots of the graph.
 
         :param info_func: a function that yields information about a node
+        :param conversion_func: a function converts values
+        :type conversion_func: str * object -> str
         :param str sort_key: key to sort on
         :param `DiGraph` graph: the graph
 
@@ -78,6 +86,7 @@ class LineArrangements(object):
             """
             return cls.node_strings_from_root(
                info_func,
+               conversion_func,
                sort_key,
                graph,
                node
@@ -86,13 +95,22 @@ class LineArrangements(object):
         return [l for root in roots for l in node_func(root)]
 
     @classmethod
-    def node_strings_from_root(cls, info_func, sort_key, graph, node):
+    def node_strings_from_root(
+       cls,
+       info_func,
+       conversion_func,
+       sort_key,
+       graph,
+       node
+    ):
         """
         Generates print information about nodes reachable from
         ``node`` including itself. Assumes that the node is a root and
         supplies some appropriate defaults.
 
         :param info_func: a function that yields information about a node
+        :param conversion_func: a function converts values
+        :type conversion_func: str * object -> str
         :param str sort_key: key to sort on
         :param `DiGraph` graph: the graph
         :param `Node` node: the node to print
@@ -107,8 +125,10 @@ class LineArrangements(object):
         * node - the table of information about the node itself
         * orphan - whether this node has no parents
         """
+        # pylint: disable=too-many-arguments
         return cls.node_strings(
            info_func,
+           conversion_func,
            sort_key,
            graph,
            True,
@@ -122,6 +142,7 @@ class LineArrangements(object):
     def node_strings(
        cls,
        info_func,
+       conversion_func,
        sort_key,
        graph,
        orphan,
@@ -135,6 +156,8 @@ class LineArrangements(object):
         ``node`` including itself.
 
         :param info_func: a function that yields information about a node
+        :param conversion_func: function that converts a datum to a str
+        :type conversion_func: (str * object) -> str
         :param str sort_key: key to sort on
         :param `DiGraph` graph: the graph
         :param bool orphan: True if this node has no parents, otherwise False
@@ -158,7 +181,7 @@ class LineArrangements(object):
            'diffstatus' : diffstatus,
            'indent' : indent,
            'last' : last,
-           'node' : info_func(node),
+           'node' : info_func(node, keys=None, conv=conversion_func),
            'orphan' : orphan,
         }
 
@@ -173,6 +196,7 @@ class LineArrangements(object):
         for succ in successors:
             lines = cls.node_strings(
                info_func,
+               conversion_func,
                sort_key,
                graph,
                False,
@@ -421,21 +445,28 @@ class LineInfo(object):
            (k, composer([g.getter(maps) for g in getters[k]])) for k in keys
         )
 
-    def info(self, node, keys=None):
+    def info(self, node, keys=None, conv=lambda k, v: v):
         """
         Function to generate information to be printed for ``node``.
 
         :param `Node` node: the node
         :param keys: list of keys for values or None
         :type keys: list of str or NoneType
+        :param conv: a conversion function that converts values to str
+        :type conv: (str * object) -> str
         :returns: a mapping of keys to values
-        :rtype: dict of str * str
+        :rtype: dict of str * (str or NoneType)
 
         Only values for elements at x in keys are calculated.
         If keys is None, return an item for every index.
         If keys is the empty list, return an empty dict.
         Return None for key in keys that can not be satisfied.
+
+        If strings is set, convert all values to their string representation.
         """
         if keys is None:
             keys = self.keys
-        return dict((k, self._funcs.get(k, lambda n: None)(node)) for k in keys)
+
+        return dict(
+           (k, conv(k, self._funcs.get(k, lambda n: None)(node))) for k in keys
+        )

@@ -58,6 +58,7 @@ class TestGraphPrint(object):
         )
         lines = pyblk.LineArrangements.node_strings_from_root(
            line_info.info,
+           lambda k, v: str(v),
            'NAME',
            GRAPH,
            node
