@@ -44,7 +44,6 @@ from . import _display
 from . import _print
 from . import _print_helpers
 from . import _structure
-from . import _utils
 from . import _write
 
 
@@ -183,23 +182,12 @@ class PrintGraph(object):
            }
         )
 
-        roots = sorted(
-           _utils.GraphUtils.get_roots(graph),
-           key=lambda n: line_info.info(n)['NAME']
+        lines = _print.LineArrangements.node_strings_from_graph(
+           line_info.info,
+           'NAME',
+           graph
         )
 
-        def node_func(node):
-            """
-            A function that returns the line arrangements for a root node.
-            """
-            return _print.LineArrangements.node_strings_from_root(
-               line_info.info,
-               'NAME',
-               graph,
-               node
-            )
-
-        lines = [l for root in roots for l in node_func(root)]
         lines = list(_print.XformLines.xform(line_info.keys, lines))
         lines = _print.Print.lines(
            line_info.keys,

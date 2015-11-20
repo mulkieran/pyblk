@@ -36,6 +36,8 @@ import functools
 import networkx as nx
 
 from ._attributes import DiffStatuses
+from ._utils import GraphUtils
+from ._utils import SortingUtils
 
 
 class LineArrangements(object):
@@ -44,13 +46,47 @@ class LineArrangements(object):
     """
 
     @classmethod
-    def node_strings_from_root(
-       cls,
-       info_func,
-       sort_key,
-       graph,
-       node
-    ):
+    def node_strings_from_graph(cls, info_func, sort_key, graph):
+        """
+        Generates print information about nodes in graph.
+        Starts from the roots of the graph.
+
+        :param info_func: a function that yields information about a node
+        :param str sort_key: key to sort on
+        :param `DiGraph` graph: the graph
+
+        :returns: a table of information to be used for further display
+        :rtype: list of dict of str * object
+
+        Fields in table:
+        * diffstatus - the diffstatus of the edge to this node
+        * indent - the level of indentation
+        * last - whether this node is the last child of its parent
+        * node - the table of information about the node itself
+        * orphan - whether this node has no parents
+        """
+        roots = sorted(
+           GraphUtils.get_roots(graph),
+           key=SortingUtils.str_key_func_gen(
+              lambda n: info_func(n, [sort_key])[sort_key]
+           )
+        )
+
+        def node_func(node):
+            """
+            A function that returns the line arrangements for a root node.
+            """
+            return cls.node_strings_from_root(
+               info_func,
+               sort_key,
+               graph,
+               node
+            )
+
+        return [l for root in roots for l in node_func(root)]
+
+    @classmethod
+    def node_strings_from_root(cls, info_func, sort_key, graph, node):
         """
         Generates print information about nodes reachable from
         ``node`` including itself. Assumes that the node is a root and
@@ -129,7 +165,9 @@ class LineArrangements(object):
 
         successors = sorted(
            graph.successors(node),
-           key=lambda x: info_func(x, [sort_key])[sort_key]
+           key=SortingUtils.str_key_func_gen(
+              lambda x: info_func(x, [sort_key])[sort_key]
+           )
         )
 
         for succ in successors:
