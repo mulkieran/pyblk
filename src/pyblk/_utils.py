@@ -31,6 +31,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import functools
 import io
 
 import networkx as nx
@@ -71,3 +72,34 @@ class GraphUtils(object):
         output = io.BytesIO()
         write_func(graph, output)
         return output.getvalue()
+
+
+class SortingUtils(object):
+    """
+    Utilities helpful for sorting.
+    """
+    # pylint: disable=too-few-public-methods
+
+    @staticmethod
+    def str_key_func_gen(func):
+        """
+        A wrapper function that generates a function that yields a str
+        for all values.
+
+        :param func: a function that yields a result when applied to an arg
+        :type func: 'a -> *
+        """
+
+        @functools.wraps(func)
+        def key_func(value):
+            """
+            Transforms the result of func to a str type if it is not already.
+            None becomes '', so that its value will appear first, all other
+            non-str values are converted to str.
+
+            :param `a value: a value to pass to func
+            """
+            res = func(value)
+            return '' if res is None else str(res)
+
+        return key_func
