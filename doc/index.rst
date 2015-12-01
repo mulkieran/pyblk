@@ -8,7 +8,8 @@ Contents:
 
    intro
    architecture
-   
+   scripts
+
    pyblk/modules
    tests/modules
 
