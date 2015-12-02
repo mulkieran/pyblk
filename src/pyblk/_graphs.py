@@ -35,6 +35,7 @@ from collections import defaultdict
 
 import networkx as nx
 
+from ._decorations import DevlinkValues
 from ._decorations import Decorator
 from ._decorations import SysfsAttributes
 from ._decorations import UdevProperties
@@ -83,10 +84,14 @@ class GenerateGraph(object):
 
         properties = ['DEVNAME', 'DEVPATH', 'DEVTYPE']
         table.update(UdevProperties.udev_properties(context, graph, properties))
+
         attributes = ['size', 'dm/name']
         table.update(
            SysfsAttributes.sysfs_attributes(context, graph, attributes)
         )
+
+        categories = ['by-path']
+        table.update(DevlinkValues.devlink_values(context, graph, categories))
 
         Decorator.decorate_nodes(graph, table)
 
@@ -171,13 +176,14 @@ class PrintGraph(object):
         ]
         line_info = _print.LineInfo(
            graph,
-           ['NAME', 'DEVTYPE', 'DIFFSTATUS', 'SIZE'],
+           ['NAME', 'DEVTYPE', 'DIFFSTATUS', 'BY-PATH', 'SIZE'],
            justification,
            {
               'NAME' : name_funcs,
               'DEVTYPE': [_print.NodeGetters.DEVTYPE],
               'DIFFSTATUS': [_print.NodeGetters.DIFFSTATUS],
-              'SIZE': [_print.NodeGetters.SIZE]
+              'SIZE': [_print.NodeGetters.SIZE],
+              'BY-PATH': [_print.NodeGetters.BY_PATH]
            }
         )
 

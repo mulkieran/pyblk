@@ -32,12 +32,15 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from itertools import groupby
+
 import networkx as nx
 
 import pyudev
 
 from pyblk._attributes import NodeTypes
 
+from ._devlink import Devlink
 
 class UdevProperties(object):
     """
@@ -136,3 +139,65 @@ class SysfsAttributes(object):
             attribute_dict[node] = cls.attributes(context, node, names)
 
         return {'SYSFS' : attribute_dict}
+
+
+class DevlinkValues(object):
+    """
+    Add the informational part of device links to the graph.
+    """
+
+    @staticmethod
+    def decorated(graph):
+        """
+        Returns elements that get decorated.
+        """
+        node_types = nx.get_node_attributes(graph, 'nodetype')
+        return (k for k in node_types \
+           if node_types[k] is NodeTypes.DEVICE_PATH)
+
+    @staticmethod
+    def values(context, element, categories):
+        """
+        Get device links values on this element.
+
+        :returns: a map of devicelinks values
+        :rtype: dict of str * (list of str * NoneType)
+        """
+        try:
+            device = pyudev.Device.from_path(context, element)
+        except pyudev.DeviceNotFoundError:
+            return dict()
+
+        def key_func(link):
+            """
+            :returns: category of link, or "" if no category
+            :rtype: str
+            """
+            key = link.category
+            return key if key is not None else ""
+
+        devlinks = sorted(
+           (Devlink(d) for d in device.device_links),
+           key=key_func
+        )
+        link_hash = dict((k, list(g)) for (k, g) in groupby(devlinks, key_func))
+        return dict((c, link_hash.get(c)) for c in categories)
+
+    @classmethod
+    def devlink_values(cls, context, graph, categories):
+        """
+        Get devlink values for graph nodes that correspond to devices.
+
+        :param `Context` context: the udev context
+        :param graph: the graph
+        :param categories: a list of devlink categories
+        :type categories: list of str
+
+        :returns: dict of property name, node, property value
+        :rtype: dict of str * str * ((list of str) or NoneType)
+        """
+        devlink_dict = dict()
+        for node in cls.decorated(graph):
+            devlink_dict[node] = cls.values(context, node, categories)
+
+        return {'DEVLINK' : devlink_dict}

@@ -37,6 +37,8 @@ from ._attributes import DiffStatuses
 from ._attributes import EdgeTypes
 from ._attributes import NodeTypes
 
+from ._decorations import Devlink
+
 
 class Rewriter(object):
     """
@@ -58,6 +60,14 @@ class Rewriter(object):
         for key, value in node_types.items():
             node_types[key] = str(value)
         nx.set_node_attributes(graph, 'nodetype', node_types)
+
+        node_types = nx.get_node_attributes(graph, 'DEVLINK')
+        for key, value in node_types.items():
+            node_types[key] = dict(
+               (k, list(str(v) for v in vs) if vs is not None else None) \
+                  for (k, vs) in value.items()
+            )
+        nx.set_node_attributes(graph, 'DEVLINK', node_types)
 
         node_types = nx.get_node_attributes(graph, 'diffstatus')
         for key, value in node_types.items():
@@ -83,6 +93,14 @@ class Rewriter(object):
         for key, value in node_types.items():
             node_types[key] = NodeTypes.get_value(value)
         nx.set_node_attributes(graph, 'nodetype', node_types)
+
+        node_types = nx.get_node_attributes(graph, 'DEVLINK')
+        for key, value in node_types.items():
+            node_types[key] = dict(
+               (k, list(Devlink(v) for v in vs) if vs != "None" else None) \
+                  for (k, vs) in value.items()
+            )
+        nx.set_node_attributes(graph, 'DEVLINK', node_types)
 
         node_types = nx.get_node_attributes(graph, 'diffstatus')
         for key, value in node_types.items():

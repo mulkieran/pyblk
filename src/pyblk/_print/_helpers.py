@@ -63,6 +63,37 @@ class NodeGetter(object):
         """
         raise NotImplementedError()
 
+class ByPath(NodeGetter):
+    """
+    Get the value of the path devlink for the node.
+    """
+    # pylint: disable=too-few-public-methods
+
+    map_requires = ['DEVLINK']
+
+    @staticmethod
+    def getter(maps):
+
+        def the_func(node):
+            """
+            Calculates a by-path value.
+
+            :param node: the node
+            :returns: the value to display for ``node``
+            :rtype: str or NoneType
+            """
+            info = maps['DEVLINK'].get(node)
+            if info is None:
+                return None
+
+            links = info.get('by-path')
+            if links is None:
+                return None
+
+            return "; ".join(link.value for link in links)
+
+        return the_func
+
 class Devname(NodeGetter):
     """
     Get a name for a node.
@@ -253,6 +284,7 @@ class NodeGetters(object):
     """
     # pylint: disable=too-few-public-methods
 
+    BY_PATH = ByPath
     DEVNAME = Devname
     DEVPATH = Devpath
     DEVTYPE = Devtype
