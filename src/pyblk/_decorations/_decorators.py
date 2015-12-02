@@ -108,7 +108,7 @@ class SysfsAttributes(object):
         Get attributes on this element.
 
         :returns: a map of sysfs attributes
-        :rtype: dict
+        :rtype: dict of str * (str or NoneType)
         """
         try:
             device = pyudev.Device.from_path(context, element)
@@ -116,7 +116,7 @@ class SysfsAttributes(object):
             return dict()
 
         attributes = device.attributes
-        return dict((k, attributes[k]) for k in names if k in attributes)
+        return dict((k, attributes.get(k)) for k in names)
 
     @classmethod
     def sysfs_attributes(cls, context, graph, names):
