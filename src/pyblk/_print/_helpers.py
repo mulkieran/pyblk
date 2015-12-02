@@ -18,8 +18,8 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    pyblk._print_helpers
-    ====================
+    pyblk._print._helpers
+    =====================
 
     Little snippets of code to print stuff.
 
@@ -37,7 +37,7 @@ import six
 
 import bytesize
 
-from ._attributes import DiffStatuses
+from pyblk._attributes import DiffStatuses
 
 @six.add_metaclass(abc.ABCMeta)
 class NodeGetter(object):

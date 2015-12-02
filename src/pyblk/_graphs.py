@@ -42,7 +42,6 @@ from ._decorations import UdevProperties
 from . import _compare
 from . import _display
 from . import _print
-from . import _print_helpers
 from . import _structure
 from . import _write
 
@@ -166,9 +165,9 @@ class PrintGraph(object):
         justification = defaultdict(lambda: '<')
         justification['SIZE'] = '>'
         name_funcs = [
-           _print_helpers.NodeGetters.DMNAME,
-           _print_helpers.NodeGetters.DEVNAME,
-           _print_helpers.NodeGetters.IDENTIFIER
+           _print.NodeGetters.DMNAME,
+           _print.NodeGetters.DEVNAME,
+           _print.NodeGetters.IDENTIFIER
         ]
         line_info = _print.LineInfo(
            graph,
@@ -176,9 +175,9 @@ class PrintGraph(object):
            justification,
            {
               'NAME' : name_funcs,
-              'DEVTYPE': [_print_helpers.NodeGetters.DEVTYPE],
-              'DIFFSTATUS': [_print_helpers.NodeGetters.DIFFSTATUS],
-              'SIZE': [_print_helpers.NodeGetters.SIZE]
+              'DEVTYPE': [_print.NodeGetters.DEVTYPE],
+              'DIFFSTATUS': [_print.NodeGetters.DIFFSTATUS],
+              'SIZE': [_print.NodeGetters.SIZE]
            }
         )
 

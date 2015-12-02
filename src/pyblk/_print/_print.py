@@ -18,8 +18,8 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    pyblk._print
-    ============
+    pyblk._print._print
+    ===================
 
     Textual display of graph.
 
@@ -35,9 +35,9 @@ import functools
 
 import networkx as nx
 
-from ._attributes import DiffStatuses
-from ._utils import GraphUtils
-from ._utils import SortingUtils
+from pyblk._attributes import DiffStatuses
+from pyblk._utils import GraphUtils
+from pyblk._utils import SortingUtils
 
 
 class LineArrangementsConfig(object):
