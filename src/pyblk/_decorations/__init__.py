@@ -28,5 +28,6 @@
 from ._decorations import Decorator
 
 from ._decorators import DifferenceMarkers
-from ._decorators import SysfsAttributes
-from ._decorators import UdevProperties
+
+from ._node_decorators import SysfsAttributes
+from ._node_decorators import UdevProperties
