@@ -18,8 +18,8 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    pyblk._decorations
-    ==================
+    pyblk._decorations._decorators
+    ==============================
 
     Tools to decorate networkx graphs in situ, i.e., as
     constructed rather than as read from a textual file.
@@ -36,7 +36,7 @@ import networkx as nx
 
 import pyudev
 
-from ._attributes import NodeTypes
+from pyblk._attributes import NodeTypes
 
 
 class UdevProperties(object):
@@ -179,45 +179,3 @@ class DifferenceMarkers(object):
                 ds_dict[edge] = value
 
         return {'diffstatus': ds_dict}
-
-
-class Decorator(object):
-    """
-    Decorate graph elements with attributes.
-    """
-
-    @staticmethod
-    def _decorate(graph, properties, setter=nx.set_node_attributes):
-        """
-        Decorate the graph.
-
-        :param `DiGraph` graph: the graph
-        :param properties: a dict of properties
-        :type properties: dict of property name -> graph element -> value
-        :param setter: a function to set the attributes
-        :type setter: function (one of networkx.set_{node, edge}_attributes)
-        """
-        for property_name, value in properties.items():
-            setter(graph, property_name, value)
-
-    @classmethod
-    def decorate_nodes(cls, graph, properties):
-        """
-        Decorate the graph.
-
-        :param `DiGraph` graph: the graph
-        :param properties: a dict of properties
-        :type properties: dict of property name -> graph element -> value
-        """
-        cls._decorate(graph, properties, nx.set_node_attributes)
-
-    @classmethod
-    def decorate_edges(cls, graph, properties):
-        """
-        Decorate the graph.
-
-        :param `DiGraph` graph: the graph
-        :param properties: a dict of properties
-        :type properties: dict of property name -> graph element -> value
-        """
-        cls._decorate(graph, properties, nx.set_edge_attributes)
