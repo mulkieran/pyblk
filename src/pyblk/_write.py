@@ -31,6 +31,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import abc
+
+from six import add_metaclass
+
 import networkx as nx
 
 from ._attributes import DiffStatuses
@@ -40,74 +44,228 @@ from ._attributes import NodeTypes
 from ._decorations import Devlink
 
 
+@add_metaclass(abc.ABCMeta)
+class ElementRewriter(object):
+    """
+    Generic interface of an element rewriter.
+    """
+
+    @staticmethod
+    @abc.abstractmethod
+    def stringize(graph, ele):
+        """
+        Convert attributes of this element to strings.
+
+        :param ele: a graph element
+        """
+        raise NotImplementedError() # pragma: no cover
+
+    @staticmethod
+    @abc.abstractmethod
+    def destringize(graph, ele):
+        """
+        Inverse of stringize.
+
+        :param ele: a graph element
+        """
+        raise NotImplementedError() # pragma: no cover
+
+
+class DefaultRewriters(object):
+    """
+    Generates the most likely rewriter for nodes.
+    """
+
+    @staticmethod
+    def rewrite_node_gen(graph, node, key, func):
+        """
+        Default way of rewriting a node.
+
+        Assumes that the key and value are at the top level.
+
+        :param graph: the graph
+        :param node: a single node
+        :param str key: the key of the graph attribute
+        :param func: the func that gives new value for attribute value
+        :type func: object -> object
+        """
+        try:
+            value = graph.node[node][key]
+        except KeyError:
+            return
+        graph.node[node][key] = func(value)
+
+    @staticmethod
+    def rewrite_edge_gen(graph, edge, key, func):
+        """
+        Default way of rewriting an edge.
+
+        Assumes that the key and value are at the top level.
+
+        :param graph: the graph
+        :param edge: a single edge
+        :param str key: the key of the graph attribute
+        :param func: the func that gives new value for attribute value
+        :type func: object -> object
+        """
+        source = edge[0]
+        target = edge[1]
+        try:
+            value = graph[source][target][key]
+        except KeyError:
+            return
+        graph[source][target][key] = func(value)
+
+
+class NodeTypeRewriter(ElementRewriter):
+    """
+    Rewrites node type.
+    """
+
+    @staticmethod
+    def stringize(graph, node):
+        return DefaultRewriters.rewrite_node_gen(graph, node, 'nodetype', str)
+
+    @staticmethod
+    def destringize(graph, node):
+        return DefaultRewriters.rewrite_node_gen(
+           graph,
+           node,
+           'nodetype',
+           NodeTypes.get_value
+        )
+
+class DevlinkRewriter(ElementRewriter):
+    """
+    Rewrites device links attributes.
+    """
+
+    @staticmethod
+    def stringize(graph, node):
+        try:
+            devlink = graph.node[node]['DEVLINK']
+        except KeyError:
+            return
+        for key, value in devlink.items():
+            devlink[key] = "None" if value is None else [str(d) for d in value]
+
+    @staticmethod
+    def destringize(graph, node):
+        try:
+            devlink = graph.node[node]['DEVLINK']
+        except KeyError:
+            return
+        for key, value in devlink.items():
+            devlink[key] = \
+               None if value == 'None' else [Devlink(d) for d in value]
+
+class NodeDiffStatusRewriter(ElementRewriter):
+    """
+    Rewrites node diff status.
+    """
+
+    @staticmethod
+    def stringize(graph, node):
+        return DefaultRewriters.rewrite_node_gen(graph, node, 'diffstatus', str)
+
+    @staticmethod
+    def destringize(graph, node):
+        return DefaultRewriters.rewrite_node_gen(
+           graph,
+           node,
+           'diffstatus',
+           DiffStatuses.get_value
+        )
+
+class EdgeTypeRewriter(ElementRewriter):
+    """
+    Rewrites edge type.
+    """
+
+    @staticmethod
+    def stringize(graph, edge):
+        return DefaultRewriters.rewrite_edge_gen(graph, edge, 'edgetype', str)
+
+    @staticmethod
+    def destringize(graph, edge):
+        return DefaultRewriters.rewrite_edge_gen(
+           graph,
+           edge,
+           'edgetype',
+           EdgeTypes.get_value
+        )
+
+class EdgeDiffStatusRewriter(ElementRewriter):
+    """
+    Rewrites edge diff status.
+    """
+
+    @staticmethod
+    def stringize(graph, edge):
+        return DefaultRewriters.rewrite_edge_gen(graph, edge, 'diffstatus', str)
+
+    @staticmethod
+    def destringize(graph, edge):
+        return DefaultRewriters.rewrite_edge_gen(
+           graph,
+           edge,
+           'diffstatus',
+           DiffStatuses.get_value
+        )
+
+
 class Rewriter(object):
     """
     Rewrite graph for output.
     """
     # pylint: disable=too-few-public-methods
 
-    @staticmethod
-    def stringize(graph):
+    _NODE_REWRITERS = [
+       DevlinkRewriter,
+       NodeDiffStatusRewriter,
+       NodeTypeRewriter
+    ]
+
+    _EDGE_REWRITERS = [
+       EdgeDiffStatusRewriter,
+       EdgeTypeRewriter
+    ]
+
+    @classmethod
+    def _rewrite(cls, graph, stringize):
         """
-        Xform node and edge types to strings.
+        Rewrite objects in graph.
+
+        :param graph: the graph
+        :param bool stringize: if True, stringize, otherwise destringize
         """
-        edge_types = nx.get_edge_attributes(graph, 'edgetype')
-        for key, value in edge_types.items():
-            edge_types[key] = str(value)
-        nx.set_edge_attributes(graph, 'edgetype', edge_types)
+        if stringize:
+            node_methods = [r.stringize for r in cls._NODE_REWRITERS]
+            edge_methods = [r.stringize for r in cls._EDGE_REWRITERS]
+        else:
+            node_methods = [r.destringize for r in cls._NODE_REWRITERS]
+            edge_methods = [r.destringize for r in cls._EDGE_REWRITERS]
 
-        node_types = nx.get_node_attributes(graph, 'nodetype')
-        for key, value in node_types.items():
-            node_types[key] = str(value)
-        nx.set_node_attributes(graph, 'nodetype', node_types)
+        for node in nx.nodes_iter(graph):
+            for rewriter in node_methods:
+                rewriter(graph, node)
 
-        node_types = nx.get_node_attributes(graph, 'DEVLINK')
-        for key, value in node_types.items():
-            node_types[key] = dict(
-               (k, list(str(v) for v in vs) if vs is not None else None) \
-                  for (k, vs) in value.items()
-            )
-        nx.set_node_attributes(graph, 'DEVLINK', node_types)
+        for edge in nx.edges_iter(graph):
+            for rewriter in edge_methods:
+                rewriter(graph, edge)
 
-        node_types = nx.get_node_attributes(graph, 'diffstatus')
-        for key, value in node_types.items():
-            node_types[key] = str(value)
-        nx.set_node_attributes(graph, 'diffstatus', node_types)
-
-        edge_types = nx.get_edge_attributes(graph, 'diffstatus')
-        for key, value in edge_types.items():
-            edge_types[key] = str(value)
-        nx.set_edge_attributes(graph, 'diffstatus', edge_types)
-
-    @staticmethod
-    def destringize(graph):
+    @classmethod
+    def stringize(cls, graph):
         """
-        Xform node and edge type strings to objects.
+        Xform objects in graph to strings as necessary.
+        :param graph: the graph
         """
-        edge_types = nx.get_edge_attributes(graph, 'edgetype')
-        for key, value in edge_types.items():
-            edge_types[key] = EdgeTypes.get_value(value)
-        nx.set_edge_attributes(graph, 'edgetype', edge_types)
+        return cls._rewrite(graph, True)
 
-        node_types = nx.get_node_attributes(graph, 'nodetype')
-        for key, value in node_types.items():
-            node_types[key] = NodeTypes.get_value(value)
-        nx.set_node_attributes(graph, 'nodetype', node_types)
-
-        node_types = nx.get_node_attributes(graph, 'DEVLINK')
-        for key, value in node_types.items():
-            node_types[key] = dict(
-               (k, list(Devlink(v) for v in vs) if vs != "None" else None) \
-                  for (k, vs) in value.items()
-            )
-        nx.set_node_attributes(graph, 'DEVLINK', node_types)
-
-        node_types = nx.get_node_attributes(graph, 'diffstatus')
-        for key, value in node_types.items():
-            node_types[key] = DiffStatuses.get_value(value)
-        nx.set_node_attributes(graph, 'diffstatus', node_types)
-
-        edge_types = nx.get_edge_attributes(graph, 'diffstatus')
-        for key, value in edge_types.items():
-            edge_types[key] = DiffStatuses.get_value(value)
-        nx.set_edge_attributes(graph, 'diffstatus', edge_types)
+    @classmethod
+    def destringize(cls, graph):
+        """
+        Xform objects in graph to strings as necessary.
+        :param graph: the graph
+        """
+        return cls._rewrite(graph, False)
