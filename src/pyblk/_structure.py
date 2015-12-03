@@ -422,3 +422,26 @@ class DMPartitionGraphs(object):
            chain([nx.DiGraph()], graphs),
            name='congruence'
         )
+
+class Graph(object):
+    """
+    Build a graph according to specifications.
+    """
+    # pylint: disable=too-few-public-methods
+
+    @staticmethod
+    def graph(context, name, classes):
+        """
+        Build a graph using the designated classes.
+
+        :param context: a context
+        :param str name: a name for the graph
+        :param classes: a list of graph classes
+        :type classes: list of type
+        :returns: a graph
+        :rtype: nx.DiGraph
+        """
+        return nx.compose_all(
+            (t.complete(context) for t in classes),
+            name=name
+        )

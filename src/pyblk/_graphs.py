@@ -67,10 +67,7 @@ class GenerateGraph(object):
            _structure.SpindleGraphs,
            _structure.SysfsBlockGraphs
         ]
-        return nx.compose_all(
-           (t.complete(context) for t in graph_classes),
-           name=name
-        )
+        return _structure.Graph.graph(context, name, graph_classes)
 
     @staticmethod
     def decorate_graph(context, graph):
