@@ -236,7 +236,7 @@ class PartitionedDiskTransformer(GraphTransformer):
 
         # edges to partitions that are not partition edges from node
         keep_edges = [e for e in graph.in_edges(partitions) \
-           if not e in partition_edges]
+           if e not in partition_edges]
 
         # Due to a a bug in pygraphviz, can not fix up edges to partitions.
         # If additional edges exist, skip.

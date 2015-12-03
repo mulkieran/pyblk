@@ -67,6 +67,8 @@ class TestGraphPrint(object):
         assert len(lines) >= len(GRAPH)
 
         node = max(GRAPH.nodes(), key=GRAPH.out_degree)
+
+        # pylint: disable=redefined-variable-type
         lines = pyblk.LineArrangements.node_strings_from_root(
            pyblk.LineArrangementsConfig(
               line_info.info,

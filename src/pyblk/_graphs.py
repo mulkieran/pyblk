@@ -197,7 +197,7 @@ class PrintGraph(object):
         )
 
         lines = list(_print.XformLines.xform(line_info.keys, lines))
-        lines = _print.Print.lines(
+        lines = _print.Print.lines( # pylint: disable=redefined-variable-type
            line_info.keys,
            lines,
            2,
