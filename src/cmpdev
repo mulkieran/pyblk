@@ -31,8 +31,6 @@
 import argparse
 import sys
 
-from networkx import nx
-
 import pyblk
 
 
@@ -67,10 +65,10 @@ def main():
     """
     args = get_parser().parse_args()
 
-    graph1 = nx.read_gml(args.path1)
-    pyblk.RewriteGraph.deconvert_graph(graph1)
-    graph2 = nx.read_gml(args.path2)
-    pyblk.RewriteGraph.deconvert_graph(graph2)
+    with open(args.path1) as infile:
+        graph1 = pyblk.Reader.read(infile)
+    with open(args.path2) as infile:
+        graph2 = pyblk.Reader.read(infile)
 
     return pyblk.CompareGraph.compare(graph1, graph2)
 

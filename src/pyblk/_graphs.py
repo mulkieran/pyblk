@@ -44,7 +44,6 @@ from . import _compare
 from . import _display
 from . import _print
 from . import _structure
-from . import _write
 
 
 class GenerateGraph(object):
@@ -91,28 +90,6 @@ class GenerateGraph(object):
         table.update(DevlinkValues.devlink_values(context, graph, categories))
 
         Decorator.decorate_nodes(graph, table)
-
-
-class RewriteGraph(object):
-    """
-    Convert graph so that it is writable.
-    """
-    # pylint: disable=too-few-public-methods
-
-    @staticmethod
-    def convert_graph(graph):
-        """
-        Do any necessary graph conversions so that it can be output.
-
-        """
-        _write.Rewriter.stringize(graph)
-
-    @staticmethod
-    def deconvert_graph(graph):
-        """
-        Do any necessary graph conversions to a just read graph.
-        """
-        _write.Rewriter.destringize(graph)
 
 
 class DisplayGraph(object):

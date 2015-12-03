@@ -31,8 +31,6 @@
 import argparse
 import sys
 
-from networkx import nx
-
 import pyudev
 
 import pyblk
@@ -82,8 +80,7 @@ def do_action(graph, action, out):
     if action == "print":
         pyblk.PrintGraph.print_graph(out, graph)
     elif action == "write":
-        pyblk.RewriteGraph.convert_graph(graph)
-        nx.write_gml(graph, out)
+        pyblk.Writer.write(graph, out)
     else:
         assert False
 

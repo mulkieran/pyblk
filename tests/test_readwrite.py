@@ -18,69 +18,59 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    pyblk._utils
-    ============
+    tests.test_readwrite
+    ====================
 
-    Generic utilities.
+    Tests reading and writing of graph.
 
-    .. moduleauthor::  mulhern <amulhern@redhat.com>
+    .. moduleauthor:: mulhern <amulhern@redhat.com>
 """
+
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import functools
-
 import networkx as nx
 
+import pyblk
 
-class GraphUtils(object):
+from ._constants import DECORATED
+
+class TestStringUtils(object):
     """
-    Generic utilties for graphs.
-    """
-    # pylint: disable=too-few-public-methods
-
-    @staticmethod
-    def get_roots(graph):
-        """
-        Get the roots of a graph.
-
-        :param `DiGraph` graph: the graph
-
-        :returns: the roots of the graph
-        :rtype: list of `Node`
-        """
-        return [n for n in graph if not nx.ancestors(graph, n)]
-
-
-class SortingUtils(object):
-    """
-    Utilities helpful for sorting.
+    Test utilities that work over networkx graphs.
     """
     # pylint: disable=too-few-public-methods
 
-    @staticmethod
-    def str_key_func_gen(func):
+    def test_as_string(self):
         """
-        A wrapper function that generates a function that yields a str
-        for all values.
+        Verify non-empty string.
+        """
+        assert pyblk.StringUtils.as_string(DECORATED, pyblk.Writer.write)
 
-        :param func: a function that yields a result when applied to an arg
-        :type func: 'a -> *
+    def test_from_string(self):
+        """
+        Verify succesful reading of empty graph.
+        """
+        strinput = \
+           '{"directed": true, "graph" : [], "nodes" : [], "links" : []}'
+        res = pyblk.StringUtils.from_string(strinput, pyblk.Reader.read)
+        assert isinstance(res, nx.DiGraph)
+        assert len(res) == 0
+
+    def test_inverses(self):
+        """
+        Test that writing the string and then reading it yields identical graph.
         """
 
-        @functools.wraps(func)
-        def key_func(value):
-            """
-            Transforms the result of func to a str type if it is not already.
-            None becomes '', so that its value will appear first, all other
-            non-str values are converted to str.
+        val = pyblk.StringUtils.as_string(DECORATED, pyblk.Writer.write)
+        res = pyblk.StringUtils.from_string(val, pyblk.Reader.read)
 
-            :param `a value: a value to pass to func
-            """
-            res = func(value)
-            return '' if res is None else str(res)
-
-        return key_func
+        assert pyblk.Compare.is_equivalent(
+           DECORATED,
+           res,
+           lambda x, y: x == y,
+           lambda x, y: x == y
+        )

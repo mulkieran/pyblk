@@ -18,35 +18,15 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    tests.test_utils
+    pyblk._readwrite
     ================
 
-    Tests utilities.
+    Reading and writing facilities for graph.
 
-    .. moduleauthor:: mulhern <amulhern@redhat.com>
+    .. moduleauthor::  Anne Mulhern  <amulhern@redhat.com>
 """
 
+from ._readwrite import Reader
+from ._readwrite import Writer
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-import pyblk
-
-from ._constants import GRAPH
-
-class TestGraphUtils(object):
-    """
-    Test utilities that work over networkx graphs.
-    """
-    # pylint: disable=too-few-public-methods
-
-    def test_roots(self):
-        """
-        Verify that roots are really roots.
-        """
-        roots = pyblk.GraphUtils.get_roots(GRAPH)
-        in_degrees = GRAPH.in_degree(roots)
-
-        assert all(in_degrees[r] == 0 for r in roots)
+from ._utils import StringUtils

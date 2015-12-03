@@ -50,3 +50,6 @@ BOTHS = list(set(SLAVES).intersection(set(HOLDERS)))
 EITHERS = list(set(SLAVES).union(set(HOLDERS)))
 
 GRAPH = pyblk.GenerateGraph.get_graph(CONTEXT, "graph")
+
+DECORATED = pyblk.GenerateGraph.get_graph(CONTEXT, "graph")
+pyblk.GenerateGraph.decorate_graph(CONTEXT, DECORATED)

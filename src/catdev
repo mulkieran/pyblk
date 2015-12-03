@@ -34,8 +34,6 @@ import argparse
 import sys
 import uuid
 
-from networkx import nx
-
 from systemd import journal
 
 import pyudev
@@ -91,14 +89,14 @@ def main():
         return 0
 
     if cli_args.filename:
-        graph = nx.read_gml(cli_args.filename)
-        pyblk.RewriteGraph.deconvert_graph(graph)
+        with open(cli_args.filename) as infile:
+            graph = pyblk.Reader.read(infile)
     else:
         context = pyudev.Context()
         graph = pyblk.GenerateGraph.get_graph(context, cli_args.name)
         pyblk.GenerateGraph.decorate_graph(context, graph)
 
-    graph_string = pyblk.GraphUtils.as_string(graph, nx.write_gml)
+    graph_string = pyblk.StringUtils.as_string(graph, pyblk.Writer.write)
 
     journal.sendv('%s=%s' % (cli_args.graph, graph_string), *cli_args.field)
 

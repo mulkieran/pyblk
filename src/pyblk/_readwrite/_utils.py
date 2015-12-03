@@ -18,60 +18,58 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    tests.test_write
-    ================
+    pyblk._readwrite._utils
+    =======================
 
-    Tests rewriting of graph to string values.
+    Utilities for reading and writing.
 
-    .. moduleauthor:: mulhern <amulhern@redhat.com>
+    .. moduleauthor::  mulhern <amulhern@redhat.com>
 """
-
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import networkx as nx
+import io
 
-import pyblk
-
-from ._constants import GRAPH
+import six
 
 
-class TestGraphWrite(object):
+class StringUtils(object):
     """
-    Test aspects of rewriting graph attributes.
+    String related utilities.
     """
+    # pylint: disable=too-few-public-methods
 
-    def test_isomorphic(self):
+    @staticmethod
+    def as_string(graph, write_func):
         """
-        Verify that after rewriting the graphs are isomorphic.
+        Return the entire graph as a single string in a structured format.
+
+        :param `DiGraph` graph: the graph
+        :param write_func: the function to write the graph
+        :type write_func: `DiGraph` * file -> NoneType
+        :returns: the graph as a stringlike thing
         """
-        new_graph = GRAPH.copy()
+        # pylint: disable=redefined-variable-type
+        if six.PY2:
+            output = io.BytesIO()
+        else:
+            output = io.StringIO()
+        write_func(graph, output)
+        return output.getvalue()
 
-        pyblk.Rewriter.stringize(new_graph)
-
-        assert nx.is_isomorphic(GRAPH, new_graph)
-        assert len(GRAPH.edges()) == len(new_graph.edges())
-
-    def test_node_identity(self):
+    @staticmethod
+    def from_string(instr, read_func):
         """
-        Verify that stringize and destringize are inverses on nodetype
-        and that they do not have no effect.
+        Get a graph from a string.
+
+        :param read_func: a function that reads data from an input stream
         """
-        new_graph = GRAPH.copy()
-
-        pyblk.Rewriter.stringize(new_graph)
-
-        home_types = nx.get_node_attributes(GRAPH, 'nodetype')
-        new_types = nx.get_node_attributes(new_graph, 'nodetype')
-
-        assert home_types != new_types
-
-        pyblk.Rewriter.destringize(new_graph)
-
-        home_types = nx.get_node_attributes(GRAPH, 'nodetype')
-        new_types = nx.get_node_attributes(new_graph, 'nodetype')
-
-        assert home_types == new_types
+        # pylint: disable=redefined-variable-type
+        if six.PY2:
+            infile = io.BytesIO(instr.encode())
+        else:
+            infile = io.StringIO(instr)
+        return read_func(infile)

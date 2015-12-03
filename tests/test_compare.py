@@ -53,14 +53,14 @@ class TestGraphComparison(object):
         edge_matcher = pyblk.Matcher(['edgetype'], 'edge')
 
         new_graph = GRAPH.copy()
-        pyblk.RewriteGraph.convert_graph(new_graph)
         filepath = str(tmpdir.join('test.gml'))
-        nx.write_gml(new_graph, filepath)
+        with open(filepath, 'w') as out:
+            pyblk.Writer.write(new_graph, out)
 
-        graph1 = nx.read_gml(filepath)
-        pyblk.RewriteGraph.deconvert_graph(graph1)
-        graph2 = nx.read_gml(filepath)
-        pyblk.RewriteGraph.deconvert_graph(graph2)
+        with open(filepath, 'r') as infile:
+            graph1 = pyblk.Reader.read(infile)
+        with open(filepath, 'r') as infile:
+            graph2 = pyblk.Reader.read(infile)
 
         assert pyblk.Compare.is_equivalent(
            graph1,
@@ -83,14 +83,14 @@ class TestGraphDifference(object):
         Verify that two identical graphs are equivalent.
         """
         new_graph = GRAPH.copy()
-        pyblk.RewriteGraph.convert_graph(new_graph)
         filepath = str(tmpdir.join('test.gml'))
-        nx.write_gml(new_graph, filepath)
+        with open(filepath, 'w') as out:
+            pyblk.Writer.write(new_graph, out)
 
-        graph1 = nx.read_gml(filepath)
-        pyblk.RewriteGraph.deconvert_graph(graph1)
-        graph2 = nx.read_gml(filepath)
-        pyblk.RewriteGraph.deconvert_graph(graph2)
+        with open(filepath, 'r') as infile:
+            graph1 = pyblk.Reader.read(infile)
+        with open(filepath, 'r') as infile:
+            graph2 = pyblk.Reader.read(infile)
 
         (diff1, diff2) = pyblk.Differences.node_differences(
            graph1,

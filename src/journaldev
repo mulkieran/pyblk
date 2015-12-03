@@ -120,14 +120,20 @@ def get_graph(journal_handle, graph_key, choice):
         entry = journal_handle.get_next()
         while entry:
             if graph_key in entry:
-                return nx.parse_gml(entry[graph_key])
+                return pyblk.StringUtils.from_string(
+                   entry[graph_key],
+                   pyblk.Reader.read
+                )
             entry = journal_handle.get_next()
         return None
     elif choice == "before":
         entry = journal_handle.get_previous()
         while entry:
             if graph_key in entry:
-                return nx.parse_gml(entry[graph_key])
+                return pyblk.StringUtils.from_string(
+                   entry[graph_key],
+                   pyblk.Reader.read
+                )
             entry = journal_handle.get_previous()
         return None
     elif choice == "diff":
@@ -164,8 +170,7 @@ def do_action(graph, action, out):
     if action == "print":
         pyblk.PrintGraph.print_graph(out, graph)
     elif action == "write":
-        pyblk.RewriteGraph.convert_graph(graph)
-        nx.write_gml(graph, out)
+        pyblk.Writer.write(graph, out)
     else:
         assert False
 

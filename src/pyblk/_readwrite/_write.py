@@ -18,10 +18,10 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    pyblk._write
-    ============
+    pyblk._readwrite._write
+    =======================
 
-    Tools to write out a graph.
+    Tools to modify a graph for caching.
 
     .. moduleauthor::  mulhern <amulhern@redhat.com>
 """
@@ -37,11 +37,11 @@ from six import add_metaclass
 
 import networkx as nx
 
-from ._attributes import DiffStatuses
-from ._attributes import EdgeTypes
-from ._attributes import NodeTypes
+from pyblk._attributes import DiffStatuses
+from pyblk._attributes import EdgeTypes
+from pyblk._attributes import NodeTypes
 
-from ._decorations import Devlink
+from pyblk._decorations import Devlink
 
 
 @add_metaclass(abc.ABCMeta)
@@ -147,7 +147,7 @@ class DevlinkRewriter(ElementRewriter):
         except KeyError:
             return
         for key, value in devlink.items():
-            devlink[key] = "None" if value is None else [str(d) for d in value]
+            devlink[key] = None if value is None else [str(d) for d in value]
 
     @staticmethod
     def destringize(graph, node):
@@ -157,7 +157,7 @@ class DevlinkRewriter(ElementRewriter):
             return
         for key, value in devlink.items():
             devlink[key] = \
-               None if value == 'None' else [Devlink(d) for d in value]
+               None if value is None else [Devlink(d) for d in value]
 
 class NodeDiffStatusRewriter(ElementRewriter):
     """

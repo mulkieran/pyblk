@@ -18,10 +18,10 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    pyblk._utils
-    ============
+    pyblk._readwrite._readwrite
+    ===========================
 
-    Generic utilities.
+    Tools to write out a graph or read one in.
 
     .. moduleauthor::  mulhern <amulhern@redhat.com>
 """
@@ -31,56 +31,64 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import functools
+import os
 
-import networkx as nx
+import json
+
+from networkx.readwrite import json_graph
+
+from ._write import Rewriter
 
 
-class GraphUtils(object):
+class JSONWriter(object):
     """
-    Generic utilties for graphs.
-    """
-    # pylint: disable=too-few-public-methods
-
-    @staticmethod
-    def get_roots(graph):
-        """
-        Get the roots of a graph.
-
-        :param `DiGraph` graph: the graph
-
-        :returns: the roots of the graph
-        :rtype: list of `Node`
-        """
-        return [n for n in graph if not nx.ancestors(graph, n)]
-
-
-class SortingUtils(object):
-    """
-    Utilities helpful for sorting.
+    Write graph to a file.
     """
     # pylint: disable=too-few-public-methods
 
     @staticmethod
-    def str_key_func_gen(func):
+    def write(graph, out):
         """
-        A wrapper function that generates a function that yields a str
-        for all values.
+        Write a graph to an output stream.
 
-        :param func: a function that yields a result when applied to an arg
-        :type func: 'a -> *
+        :param DiGraph graph: a graph
+        :param out: an output stream
         """
+        graph = graph.copy()
+        Rewriter.stringize(graph)
+        data = json_graph.node_link_data(graph)
+        json.dump(data, out, indent=4)
+        print(end=os.linesep, file=out)
 
-        @functools.wraps(func)
-        def key_func(value):
-            """
-            Transforms the result of func to a str type if it is not already.
-            None becomes '', so that its value will appear first, all other
-            non-str values are converted to str.
 
-            :param `a value: a value to pass to func
-            """
-            res = func(value)
-            return '' if res is None else str(res)
+class JSONReader(object):
+    """
+    Read graph from a file.
+    """
 
-        return key_func
+    @staticmethod
+    def readin(data):
+        """
+        Read data from a string input.
+
+        :param data: the JSON formatted data
+        :returns: the graph
+        :rtype: DiGraph
+        """
+        graph = json_graph.node_link_graph(data)
+        Rewriter.destringize(graph)
+        return graph
+
+    @classmethod
+    def read(cls, instream):
+        """
+        Read a graph from an input stream
+
+        :param instream: the input stream
+        :returns: a graph corresponding to the JSON data in the stream
+        """
+        data = json.load(instream)
+        return cls.readin(data)
+
+Reader = JSONReader
+Writer = JSONWriter

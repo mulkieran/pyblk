@@ -31,8 +31,6 @@
 import argparse
 import sys
 
-from networkx import nx
-
 import pyblk
 
 
@@ -98,8 +96,7 @@ def do_action(graph, action, out):
     elif action == "print":
         pyblk.PrintGraph.print_graph(out, graph)
     elif action == "write":
-        pyblk.RewriteGraph.convert_graph(graph)
-        nx.write_gml(graph, out)
+        pyblk.Writer.write(graph, out)
     else:
         assert False
 
@@ -109,10 +106,10 @@ def main():
     """
     args = get_parser().parse_args()
 
-    graph1 = nx.read_gml(args.path1)
-    pyblk.RewriteGraph.deconvert_graph(graph1)
-    graph2 = nx.read_gml(args.path2)
-    pyblk.RewriteGraph.deconvert_graph(graph2)
+    with open(args.path1) as infile:
+        graph1 = pyblk.Reader.read(infile)
+    with open(args.path2) as infile:
+        graph2 = pyblk.Reader.read(infile)
 
     graph = pyblk.DiffGraph.do_diff(graph1, graph2, args.diff)
 

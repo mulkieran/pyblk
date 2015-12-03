@@ -31,8 +31,6 @@
 import argparse
 import sys
 
-from networkx import nx
-
 import pyblk
 
 _ACTIONS = ['dot', 'image', 'print']
@@ -110,8 +108,8 @@ def main():
     if parsing_error:
         sys.exit(parsing_error)
 
-    graph = nx.read_gml(args.filename)
-    pyblk.RewriteGraph.deconvert_graph(graph)
+    with open(args.filename) as infile:
+        graph = pyblk.Reader.read(infile)
 
     if args.inverse:
         graph = graph.reverse(copy=False)

@@ -90,7 +90,7 @@ class ByPath(NodeGetter):
             if links is None:
                 return None
 
-            return "; ".join(link.value for link in links)
+            return "; ".join(str(link.value) for link in links)
 
         return the_func
 
