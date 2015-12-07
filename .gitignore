@@ -28,6 +28,7 @@ doc/tests
 
 # vim
 *.swp
+*.swo
 
 # archive
 *.tar.gz
