@@ -32,7 +32,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import sys
+
 from itertools import groupby
+
+import six
 
 import networkx as nx
 
@@ -119,7 +123,17 @@ class SysfsAttributes(object):
             return dict()
 
         attributes = device.attributes
-        return dict((k, attributes.get(k)) for k in names)
+
+        res = dict()
+        for key in names:
+            try:
+                val = attributes.get(key)
+                if val is not None and not isinstance(val, six.text_type):
+                    val = val.decode(sys.getfilesystemencoding())
+                res[key] = val
+            except UnicodeDecodeError:
+                pass
+        return res
 
     @classmethod
     def sysfs_attributes(cls, context, graph, names):
