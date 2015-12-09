@@ -7,7 +7,9 @@ Contents:
    :maxdepth: 2
 
    intro
-   
+   architecture
+   scripts
+
    pyblk/modules
    tests/modules
 

@@ -46,8 +46,6 @@ from ._constants import EITHERS
 from ._constants import HOLDERS
 from ._constants import SLAVES
 
-# pylint: disable=too-many-function-args
-
 NUM_TESTS = 5
 
 # Use conditional to avoid processing tests if number of examples is too small.
@@ -109,6 +107,7 @@ else:
             If recursive is True, test ancestor/descendant relationship.
             If recursive is False, tests parent/child relationship.
             """
+            # pylint: disable=too-many-function-args
             slaves = list(pyblk.slaves(CONTEXT, device, recursive))
             for slave in slaves:
                 assert device in list(

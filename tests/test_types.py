@@ -18,10 +18,10 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    tests.constants
-    ===============
+    tests.test_types
+    ================
 
-    Constants for testing.
+    Tests types methods.
 
     .. moduleauthor:: mulhern <amulhern@redhat.com>
 """
@@ -32,24 +32,20 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import pyudev
-
 import pyblk
 
-CONTEXT = pyudev.Context()
-DEVICES = CONTEXT.list_devices()
 
-# pylint: disable=too-many-function-args
+class TestTypes(object):
+    """
+    Test functions over sets of types.
+    """
+    # pylint: disable=too-few-public-methods
 
-SLAVES = [d for d in DEVICES if list(pyblk.slaves(CONTEXT, d, False))]
+    def test_get_value(self):
+        """
+        Test getting an existing type, and not.
+        """
+        edge_type = pyblk.EdgeTypes.values()[0]
+        assert edge_type is pyblk.EdgeTypes.get_value(str(edge_type))
 
-HOLDERS = [d for d in DEVICES if list(pyblk.holders(CONTEXT, d, False))]
-
-BOTHS = list(set(SLAVES).intersection(set(HOLDERS)))
-
-EITHERS = list(set(SLAVES).union(set(HOLDERS)))
-
-GRAPH = pyblk.GenerateGraph.get_graph(CONTEXT, "graph")
-
-DECORATED = pyblk.GenerateGraph.get_graph(CONTEXT, "graph")
-pyblk.GenerateGraph.decorate_graph(CONTEXT, DECORATED)
+        assert pyblk.EdgeTypes.get_value("bogus") is None

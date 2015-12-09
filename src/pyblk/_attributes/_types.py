@@ -35,16 +35,16 @@ import abc
 
 import six
 
+from ._metaclasses import AttributeValue
+from ._metaclasses import AttributeValues
+
 @six.add_metaclass(abc.ABCMeta)
-class NodeType(object):
+class NodeType(AttributeValue):
     """
     Abstract class that represents a node type.
     """
     # pylint: disable=too-few-public-methods
-
-    def __str__(self): # pragma: no cover
-        return self.__class__.__name__
-    __repr__ = __str__
+    pass
 
 class DevicePath(NodeType):
     """
@@ -64,7 +64,7 @@ class WWN(NodeType):
 
 WWN = WWN() # pylint: disable=invalid-name
 
-class NodeTypes(object):
+class NodeTypes(AttributeValues):
     """
     Enumeration of node types.
     """
@@ -72,36 +72,18 @@ class NodeTypes(object):
     DEVICE_PATH = DevicePath
     WWN = WWN
 
-    @staticmethod
-    def is_type(node, node_type):
-        """
-        Whether ``node`` has type ``node_type``.
+    @classmethod
+    def values(cls):
+        return [cls.DEVICE_PATH, cls.WWN]
 
-        :param `agraph.Edge` node: the node
-        :param `EdgeType` node_type: an node type
-        :returns: True if ``node`` has type ``node_type``, otherwise False
-        :rtype: bool
-        """
-        return node.attr['nodetype'] == str(node_type)
-
-    @staticmethod
-    def types(): # pylint: disable=invalid-name
-        """
-        :returns: a list of all ``NodeType`` objects.
-        :rtype: list of ``NodeType``
-        """
-        return [DevicePath, WWN]
 
 @six.add_metaclass(abc.ABCMeta)
-class EdgeType(object):
+class EdgeType(AttributeValue):
     """
     Superclass of edge types.
     """
     # pylint: disable=too-few-public-methods
-
-    def __str__(self): # pragma: no cover
-        return self.__class__.__name__
-    __repr__ = __str__
+    pass
 
 class Slave(EdgeType):
     """
@@ -139,7 +121,7 @@ class Congruence(EdgeType):
 
 Congruence = Congruence() # pylint: disable=invalid-name
 
-class EdgeTypes(object):
+class EdgeTypes(AttributeValues):
     """
     Enumeration of edge types.
     """
@@ -149,14 +131,11 @@ class EdgeTypes(object):
     SPINDLE = Spindle
     CONGRUENCE = Congruence
 
-    @staticmethod
-    def is_type(edge, edge_type):
-        """
-        Whether ``edge`` has type ``edge_type``.
-
-        :param `agraph.Edge` edge: the edge
-        :param `EdgeType` edge_type: an edge type
-        :returns: True if ``edge`` has type ``edge_type``, otherwise False
-        :rtype: bool
-        """
-        return edge.attr['edgetype'] == str(edge_type)
+    @classmethod
+    def values(cls):
+        return [
+           cls.CONGRUENCE,
+           cls.PARTITION,
+           cls.SLAVE,
+           cls.SPINDLE
+        ]

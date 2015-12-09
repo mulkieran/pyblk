@@ -1,0 +1,838 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Brief Advertisement for 
+\emph on
+pyblk
+\emph default
+ and RFC
+\end_layout
+
+\begin_layout Abstract
+Storage configurations these days can be large, intricate, and many-layered.
+ When there is a symptom of some problem, the cause of the problem may be
+ hard to figure out.
+ pyblk is an idea for a tool to enhance the ability of the storage administrator
+ to comprehend and visualize a storage configuration and to diagnose and
+ remediate storage problems.
+ It is inspired by the linux utility lsblk, which displays storage configuration
+s in various ways.
+\end_layout
+
+\begin_layout Abstract
+pyblk offers some additional features which we expect would prove very useful
+ to the storage administrator.
+ Storage configurations are always DAGS (directed acyclic graphs).
+ lsblk's default display prints the storage graph as a list of trees using
+ a straightforward textual representation.
+ pyblk offers the following significant features beyond those that lsblk
+ offers.
+ First, it is able to write the graph in a structured format that can easily
+ be retrieved and further processed.
+ Second, pyblk graphs can be enriched with more relationships and entities
+ than lsblk acknowledges.
+ Third, pyblk offers a simple diffing capability that automatically calculates
+ and displays differences between storage graphs.
+ Fourth, pyblk offers the ability to display storage graphs in a textual
+ format similar to lsblk and also in a graphical format (which lacks the
+ redundancy of the tree format).
+\end_layout
+
+\begin_layout Abstract
+An implementation of pyblk is available at 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+https://github.com/mulkieran/pyblk/
+\end_layout
+
+\end_inset
+
+.
+ Some of the discussion in this document really refers to the PR at 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+https://github.com/mulkieran/pyblk/pull/2
+\end_layout
+
+\end_inset
+
+.
+ If you are interested in trying it out, it's best to check out the PR.
+ See the tox.ini file to get an idea of its dependencies.
+\end_layout
+
+\begin_layout Standard
+lsblk is a handy tool because it offers a readable summary of storage devices
+ and the relationships between them.
+ However, sometimes a storage administrator does not want to know the structure
+ of storage now, but rather the structure of storage at some previous time
+ or whether and how storage may have changed over some period.
+ With its ability to store, retrieve, compare, and display graphs in various
+ ways, pyblk already offers sufficient capabilities to satisfy these needs.
+ We invite suggestions and comments on how to use these existing capabilities
+ and how to integrate them with other tools.
+\end_layout
+
+\begin_layout Standard
+Consider a fairly typical example storage configuration making use of lvm,
+ mdraid, and multipath.
+ For this particular configuration, lsblk generates 188 lines of description
+ in its default format for about 80 devices.
+ This storage configuration is not excessively large or unusually complicated.
+ An example of the first few lines of output is shown below.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "basicstyle={\footnotesize\ttfamily}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+NAME                                      MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINT
+\end_layout
+
+\begin_layout Plain Layout
+
+sda                                         8:0    0 279.4G  0 disk  
+\end_layout
+
+\begin_layout Plain Layout
+
+|-sda1                                      8:1    0   200M  0 part  /boot/efi
+\end_layout
+
+\begin_layout Plain Layout
+
+|-sda2                                      8:2    0   500M  0 part  /boot
+\end_layout
+
+\begin_layout Plain Layout
+
+`-sda3                                      8:3    0 278.7G  0 part  
+\end_layout
+
+\begin_layout Plain Layout
+
+  |-rhel_dhcp47--10-root                  253:0    0    50G  0 lvm   /
+\end_layout
+
+\begin_layout Plain Layout
+
+  |-rhel_dhcp47--10-swap                  253:1    0  11.7G  0 lvm   [SWAP]
+\end_layout
+
+\begin_layout Plain Layout
+
+  `-rhel_dhcp47--10-home                  253:25   0   217G  0 lvm   /home
+\end_layout
+
+\begin_layout Plain Layout
+
+sdb                                         8:16   0 931.5G  0 disk  
+\end_layout
+
+\begin_layout Plain Layout
+
+`-WDC_WD10EFRX-68PJCN0_WD-WCC4JKAT9Y7F    253:13   0 931.5G  0 mpath 
+\end_layout
+
+\begin_layout Plain Layout
+
+  `-WDC_WD10EFRX-68PJCN0_WD-WCC4JKAT9Y7F1 253:22   0  15.3G  0 part  
+\end_layout
+
+\begin_layout Plain Layout
+
+    `-md126                                 9:126  0    61G  0 raid5 
+\end_layout
+
+\begin_layout Plain Layout
+
+      `-vg-lv_tdata_corig                 253:29   0    32G  0 lvm   
+\end_layout
+
+\begin_layout Plain Layout
+
+        `-vg-lv_tdata                     253:30   0    32G  0 lvm   
+\end_layout
+
+\begin_layout Plain Layout
+
+          `-vg-lv-tpool                   253:31   0    32G  0 lvm   
+\end_layout
+
+\begin_layout Plain Layout
+
+            |-vg-lv                       253:32   0    32G  0 lvm   
+\end_layout
+
+\begin_layout Plain Layout
+
+            `-vg-thin1                    253:33   0     1T  0 lvm   
+\end_layout
+
+\begin_layout Plain Layout
+
+sdc                                         8:32   0 931.5G  0 disk  
+\end_layout
+
+\begin_layout Plain Layout
+
+`-WDC_WD10EFRX-68PJCN0_WD-WCC4JKECTRRV    253:4    0 931.5G  0 mpath 
+\end_layout
+
+\begin_layout Plain Layout
+
+  `-WDC_WD10EFRX-68PJCN0_WD-WCC4JKECTRRV1 253:21   0  15.3G  0 part  
+\end_layout
+
+\begin_layout Plain Layout
+
+    `-md126                                 9:126  0    61G  0 raid5 
+\end_layout
+
+\begin_layout Plain Layout
+
+      `-vg-lv_tdata_corig                 253:29   0    32G  0 lvm   
+\end_layout
+
+\begin_layout Plain Layout
+
+        `-vg-lv_tdata                     253:30   0    32G  0 lvm   
+\end_layout
+
+\begin_layout Plain Layout
+
+          `-vg-lv-tpool                   253:31   0    32G  0 lvm   
+\end_layout
+
+\begin_layout Plain Layout
+
+            |-vg-lv                       253:32   0    32G  0 lvm   
+\end_layout
+
+\begin_layout Plain Layout
+
+            `-vg-thin1                    253:33   0     1T  0 lvm
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+  
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Compare lsblk's output with pyblk's similar output, show below.
+ It has fewer columns and the names are less readable than lsblk's default,
+ but these differences are trivial.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "basicstyle={\footnotesize\ttfamily}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+NAME                                DEVTYPE
+\end_layout
+
+\begin_layout Plain Layout
+
+0x600508b1001c79ade5178f0626caaa9c  None       
+\end_layout
+
+\begin_layout Plain Layout
+
+`-/dev/sda                          disk       
+\end_layout
+
+\begin_layout Plain Layout
+
+  |-/dev/sda1                       partition       
+\end_layout
+
+\begin_layout Plain Layout
+
+  |-/dev/sda2                       partition        
+\end_layout
+
+\begin_layout Plain Layout
+
+  `-/dev/sda3                       partition       
+\end_layout
+
+\begin_layout Plain Layout
+
+    |-/dev/dm-0                     disk        
+\end_layout
+
+\begin_layout Plain Layout
+
+    |-/dev/dm-1                     disk        
+\end_layout
+
+\begin_layout Plain Layout
+
+    `-/dev/dm-26                    disk       
+\end_layout
+
+\begin_layout Plain Layout
+
+0xb2590ae94ee25001                  None             
+\end_layout
+
+\begin_layout Plain Layout
+
+|-/dev/sdb                          disk              
+\end_layout
+
+\begin_layout Plain Layout
+
+  `-/dev/dm-6                       disk             
+\end_layout
+
+\begin_layout Plain Layout
+
+    `-/dev/dm-21                    disk              
+\end_layout
+
+\begin_layout Plain Layout
+
+      `-/dev/md126                  disk               
+\end_layout
+
+\begin_layout Plain Layout
+
+        `-/dev/dm-30                disk               
+\end_layout
+
+\begin_layout Plain Layout
+
+          `-/dev/dm-31              disk              
+\end_layout
+
+\begin_layout Plain Layout
+
+            `-/dev/dm-32            disk              
+\end_layout
+
+\begin_layout Plain Layout
+
+              |-/dev/dm-33          disk              
+\end_layout
+
+\begin_layout Plain Layout
+
+              `-/dev/dm-34          disk        
+\end_layout
+
+\begin_layout Plain Layout
+
+0xfb1560374ee25001                  None      
+\end_layout
+
+\begin_layout Plain Layout
+
+|-/dev/sdc                          disk        
+\end_layout
+
+\begin_layout Plain Layout
+
+  `-/dev/dm-10                      disk        
+\end_layout
+
+\begin_layout Plain Layout
+
+    `-/dev/dm-24                    disk        
+\end_layout
+
+\begin_layout Plain Layout
+
+      `-/dev/md126                  disk        
+\end_layout
+
+\begin_layout Plain Layout
+
+        `-/dev/dm-30                disk        
+\end_layout
+
+\begin_layout Plain Layout
+
+          `-/dev/dm-31              disk       
+\end_layout
+
+\begin_layout Plain Layout
+
+            `-/dev/dm-32            disk       
+\end_layout
+
+\begin_layout Plain Layout
+
+              |-/dev/dm-33          disk     
+\end_layout
+
+\begin_layout Plain Layout
+
+              `-/dev/dm-34          disk
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+More importantly, observe that pyblk goes further than lsblk in capturing
+ a significant relationship, that of paths with their respective devices.
+ This information is certainly useful to a storage administrator in tracking
+ a particular physical disk
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+As a consequence of including these additional relationships, pyblk's output
+ is a bit longer than lsblk's, about 215 lines
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Note that several devices appear more than once.
+ This is a consequence of the fact that the storage configuration is actually
+ a DAG (Directed Acyclic Graph).
+ A representation using trees will have redundant parts wherever one node
+ has more than one parent.
+ For both devices, it is possible to invert the display so that the roots
+ of each tree are the devices at the top of the storage stack and the leaves
+ are the device nodes (in the case of lsblk) or physical devices (typical
+ with pyblk).
+ This does not eliminate the redundancy, it just causes the redundancy to
+ appear elsewhere in the graph.
+\end_layout
+
+\begin_layout Standard
+Now, imagine that there has been some incident or change in behavior, and
+ the storage administrator finds it necessary to investigate.
+ They may be interested in the storage configuration as pyblk would view
+ it now, but they are likely to also be interested in whether a change has
+ occurrred in the storage configuration as a result of, or in connection
+ with the incident or change.
+ Because pyblk is able to store, retrieve, and automatically compare graphs,
+ the storage administrator's job might be made a lot easier.
+ Imagine a facility that automatically caches pyblk graphs over time.
+ These graphs might be cached as a result of a particular event, or regularly,
+ according to a schedule.
+ In any case, these graphs can then be compared.
+ Certain simple differences, for example, new or missing nodes can automatically
+ be computed and the results displayed to the storage administrator.
+\end_layout
+
+\begin_layout Standard
+For example, consider two graphs of storage generated at different times.
+ The first graph requires 215 lines to display, the new one requires 246
+ lines.
+ Clearly they represent different storage configurations and the textual
+ output is just short eenough that the administrator is likely to discover
+ the differences by a visual inspection of the graph.
+ However, pyblk offers the abiity to do a simple comparison, and the administrat
+or would instantly see the change by deploying its diff tool.
+ Some sample output from the tool is shown below.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "basicstyle={\footnotesize\ttfamily}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+NAME                                DEVTYPE    DIFFSTATUS
+\end_layout
+
+\begin_layout Plain Layout
+
+0x600508b1001c79ade5178f0626caaa9c  None       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+`-/dev/sda                          disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+  |-/dev/sda1                       partition  None        
+\end_layout
+
+\begin_layout Plain Layout
+
+  |-/dev/sda2                       partition  None        
+\end_layout
+
+\begin_layout Plain Layout
+
+  `-/dev/sda3                       partition  None        
+\end_layout
+
+\begin_layout Plain Layout
+
+    |-/dev/dm-0                     disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+    |-/dev/dm-1                     disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+    `-/dev/dm-25                    disk       None  
+\end_layout
+
+\begin_layout Plain Layout
+
+0xb2590ae94ee25001                  None       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+|-/dev/sdb                          disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+  |-/dev/dm-13                      disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+    `-/dev/dm-22                    disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+      `-/dev/md126                  disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+        `-/dev/dm-29                disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+          `-/dev/dm-30              disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+            `-/dev/dm-31            disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+              |-/dev/dm-32          disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+              `-/dev/dm-33          disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+  `+/dev/sdb1                       partition  ADDED       
+\end_layout
+
+\begin_layout Plain Layout
+
+    `+/dev/dm-22                    disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+      `-/dev/md126                  disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+        `-/dev/dm-29                disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+          `-/dev/dm-30              disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+            `-/dev/dm-31            disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+              |-/dev/dm-32          disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+              `-/dev/dm-33          disk       Non
+\end_layout
+
+\begin_layout Plain Layout
+
+0xfb1560374ee25001                  None       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+|-/dev/sdc                          disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+  |-/dev/dm-4                       disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+    `-/dev/dm-21                    disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+      `-/dev/md126                  disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+        `-/dev/dm-29                disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+          `-/dev/dm-30              disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+            `-/dev/dm-31            disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+              |-/dev/dm-32          disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+              `-/dev/dm-33          disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+  `+/dev/sdc1                       partition  ADDED       
+\end_layout
+
+\begin_layout Plain Layout
+
+    `+/dev/dm-21                    disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+      `-/dev/md126                  disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+        `-/dev/dm-29                disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+          `-/dev/dm-30              disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+            `-/dev/dm-31            disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+              |-/dev/dm-32          disk       None        
+\end_layout
+
+\begin_layout Plain Layout
+
+              `-/dev/dm-33          disk       None
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The word 
+\begin_inset Quotes eld
+\end_inset
+
+ADDED
+\begin_inset Quotes erd
+\end_inset
+
+ in the diffstatus column indicates that the device has been added to the
+ graph.
+ What has happened, it turns out, is that 
+\family typewriter
+parted --list
+\family default
+ has been run, with the result that the partition device nodes, previously
+ removed by multipath udev rules, have been re-created by parted.
+\end_layout
+
+\begin_layout Standard
+While the textual representation of a storage graph is valuable, an image
+ can sometimes be more informative, allowing the administrator to see the
+ overall structure of moderately sized storage configurations at a glance.
+ Consider the image below, which has been aggressively scaled to 6% of its
+ original size.
+ It's not possible to see much detail, but it is possible to see the overall
+ structure more easily than with the textual representation.
+ If you know that partition devices are currently shown as rectangles and
+ physical devices as octagons things become a little clearer.
+ This graph is really the graphical version of the difference graph, part
+ of which is shown above.
+ The newly added partitions are shaded, and quite visible.
+ We see at a glance that not quite all of the partitions were re-added by
+ parted, one already existed.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename diff.pdf
+	scale 6
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+At present, pyblk is a simple library that computes, stores, compares, and
+ displays storage configurations in various ways.
+ We believe that the ideas it embodies could be useful in a variety of applicati
+ons to assist the storage administrator in diagnosing and remediating storage
+ problems.
+ We look forward to your suggestions on ways to make use of its capabilities.
+\end_layout
+
+\end_body
+\end_document

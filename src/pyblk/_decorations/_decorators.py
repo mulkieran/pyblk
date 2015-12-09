@@ -18,10 +18,11 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    pyblk._utils
-    ============
+    pyblk._decorations._decorators
+    ==============================
 
-    Generic utilities.
+    Tools to decorate networkx graphs in situ, i.e., as
+    constructed rather than as read from a textual file.
 
     .. moduleauthor::  mulhern <amulhern@redhat.com>
 """
@@ -31,56 +32,45 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import functools
 
-import networkx as nx
-
-
-class GraphUtils(object):
+class DifferenceMarkers(object):
     """
-    Generic utilties for graphs.
+    Difference markers, either added or removed or present.
     """
-    # pylint: disable=too-few-public-methods
 
     @staticmethod
-    def get_roots(graph):
+    def node_differences(graph, difference, value):
         """
-        Get the roots of a graph.
+        Get node differences in ``graph`` based on ``difference``.
 
         :param `DiGraph` graph: the graph
+        :param `DiGraph` difference: a graph representing the difference
+        :param str value: marker to add to graph
 
-        :returns: the roots of the graph
-        :rtype: list of `Node`
+        If node is in difference, adds ``value`` as "diffstatus" attribute.
         """
-        return [n for n in graph if not nx.ancestors(graph, n)]
+        ds_dict = dict()
+        for node in graph:
+            if node in difference:
+                ds_dict[node] = value
 
-
-class SortingUtils(object):
-    """
-    Utilities helpful for sorting.
-    """
-    # pylint: disable=too-few-public-methods
+        return {'diffstatus': ds_dict}
 
     @staticmethod
-    def str_key_func_gen(func):
+    def edge_differences(graph, difference, value):
         """
-        A wrapper function that generates a function that yields a str
-        for all values.
+        Get edge differences in ``graph`` based on ``difference``.
 
-        :param func: a function that yields a result when applied to an arg
-        :type func: 'a -> *
+        :param `DiGraph` graph: the graph
+        :param `DiGraph` difference: a graph representing the difference
+        :param str value: marker to add to graph
+
+        If edge is in difference, adds ``value`` as "diffstatus" attribute.
         """
+        ds_dict = dict()
+        diff_edges = difference.edges()
+        for edge in graph.edges_iter():
+            if edge in diff_edges:
+                ds_dict[edge] = value
 
-        @functools.wraps(func)
-        def key_func(value):
-            """
-            Transforms the result of func to a str type if it is not already.
-            None becomes '', so that its value will appear first, all other
-            non-str values are converted to str.
-
-            :param `a value: a value to pass to func
-            """
-            res = func(value)
-            return '' if res is None else str(res)
-
-        return key_func
+        return {'diffstatus': ds_dict}

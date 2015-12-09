@@ -18,38 +18,15 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    tests.constants
-    ===============
+    pyblk._readwrite
+    ================
 
-    Constants for testing.
+    Reading and writing facilities for graph.
 
-    .. moduleauthor:: mulhern <amulhern@redhat.com>
+    .. moduleauthor::  Anne Mulhern  <amulhern@redhat.com>
 """
 
+from ._readwrite import Reader
+from ._readwrite import Writer
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-import pyudev
-
-import pyblk
-
-CONTEXT = pyudev.Context()
-DEVICES = CONTEXT.list_devices()
-
-# pylint: disable=too-many-function-args
-
-SLAVES = [d for d in DEVICES if list(pyblk.slaves(CONTEXT, d, False))]
-
-HOLDERS = [d for d in DEVICES if list(pyblk.holders(CONTEXT, d, False))]
-
-BOTHS = list(set(SLAVES).intersection(set(HOLDERS)))
-
-EITHERS = list(set(SLAVES).union(set(HOLDERS)))
-
-GRAPH = pyblk.GenerateGraph.get_graph(CONTEXT, "graph")
-
-DECORATED = pyblk.GenerateGraph.get_graph(CONTEXT, "graph")
-pyblk.GenerateGraph.decorate_graph(CONTEXT, DECORATED)
+from ._utils import StringUtils

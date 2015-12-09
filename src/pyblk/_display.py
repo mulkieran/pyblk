@@ -38,8 +38,9 @@ from functools import reduce # pylint: disable=redefined-builtin
 
 import six
 
-from ._types import EdgeTypes
-from ._types import NodeTypes
+from ._attributes import DiffStatuses
+from ._attributes import EdgeTypes
+from ._attributes import NodeTypes
 
 class HTMLUtils(object):
     """
@@ -76,7 +77,6 @@ class Utils(object):
     """
     General utilities for graph transformations.
     """
-    # pylint: disable=too-few-public-methods
 
     @staticmethod
     def copy_attr(attr):
@@ -114,6 +114,41 @@ class Utils(object):
            eval(res) # pylint: disable=eval-used
         )
 
+    @staticmethod
+    def is_node_type(node, node_type):
+        """
+        Whether ``node`` has type ``node_type``.
+
+        :param `agraph.Edge` node: the node
+        :param `EdgeType` node_type: an node type
+        :returns: True if ``node`` has type ``node_type``, otherwise False
+        :rtype: bool
+        """
+        return node.attr['nodetype'] == str(node_type)
+
+    @staticmethod
+    def is_edge_type(edge, edge_type):
+        """
+        Whether ``edge`` has type ``edge_type``.
+
+        :param `agraph.Edge` edge: the edge
+        :param `EdgeType` edge_type: an edge type
+        :returns: True if ``edge`` has type ``edge_type``, otherwise False
+        :rtype: bool
+        """
+        return edge.attr['edgetype'] == str(edge_type)
+
+    @staticmethod
+    def is_diff_status(ele, diff_status):
+        """
+        Whether ``ele`` has diff status ``diff_status``.
+
+        :param ele: the graph element
+        :type edge: `agraph.Edge` or `agraph.Node`
+        :returns: True if ``ele`` has status ``diff_status``, otherwise False
+        :rtype: bool
+        """
+        return ele.attr['diffstatus'] == str(diff_status)
 
 @six.add_metaclass(abc.ABCMeta)
 class GraphTransformer(object):
@@ -162,7 +197,7 @@ class PartitionTransformer(GraphTransformer):
     Transforms nodes that are partitions.
 
     Sets node label to device name rather than device path.
-    Sets node shape to triangle.
+    Sets node shape to rectangle.
     """
 
     @staticmethod
@@ -170,12 +205,12 @@ class PartitionTransformer(GraphTransformer):
         obj.attr['label'] = os.path.basename(
            Utils.get_attr(obj, ['UDEV', 'DEVPATH'])
         )
-        obj.attr['shape'] = "triangle"
+        obj.attr['shape'] = "rectangle"
 
     @classmethod
     def objects(cls, graph):
         return (n for n in graph.iternodes() if \
-           NodeTypes.is_type(n, NodeTypes.DEVICE_PATH) and \
+           Utils.is_node_type(n, NodeTypes.DEVICE_PATH) and \
            Utils.get_attr(n, ['UDEV', 'DEVTYPE']) == 'partition')
 
 
@@ -190,7 +225,7 @@ class PartitionedDiskTransformer(GraphTransformer):
     @staticmethod
     def xform_object(graph, obj):
         partition_edges = [e for e in graph.out_edges(obj) if \
-           EdgeTypes.is_type(e, EdgeTypes.PARTITION)]
+           Utils.is_edge_type(e, EdgeTypes.PARTITION)]
 
         # If there are no partitions in this disk, do nothing
         if not partition_edges:
@@ -201,7 +236,7 @@ class PartitionedDiskTransformer(GraphTransformer):
 
         # edges to partitions that are not partition edges from node
         keep_edges = [e for e in graph.in_edges(partitions) \
-           if not e in partition_edges]
+           if e not in partition_edges]
 
         # Due to a a bug in pygraphviz, can not fix up edges to partitions.
         # If additional edges exist, skip.
@@ -232,23 +267,23 @@ class PartitionedDiskTransformer(GraphTransformer):
     @classmethod
     def objects(cls, graph):
         return (n for n in graph.iternodes() if \
-           NodeTypes.is_type(n, NodeTypes.DEVICE_PATH) and \
+           Utils.is_node_type(n, NodeTypes.DEVICE_PATH) and \
            Utils.get_attr(n, ['UDEV', 'DEVTYPE']) == 'disk')
 
 
 class SpindleTransformer(GraphTransformer):
     """
-    Make every actual physical spindle into a double octagon.
+    Make every actual physical spindle an octagon.
     """
 
     @staticmethod
     def xform_object(graph, obj):
-        obj.attr['shape'] = "doubleoctagon"
+        obj.attr['shape'] = "octagon"
 
     @classmethod
     def objects(cls, graph):
         return [n for n in graph.iternodes() if \
-           NodeTypes.is_type(n, NodeTypes.WWN)]
+           Utils.is_node_type(n, NodeTypes.WWN)]
 
 
 class PartitionEdgeTransformer(GraphTransformer):
@@ -263,7 +298,7 @@ class PartitionEdgeTransformer(GraphTransformer):
     @classmethod
     def objects(cls, graph):
         return (e for e in graph.iteredges() if \
-           EdgeTypes.is_type(e, EdgeTypes.PARTITION))
+           Utils.is_edge_type(e, EdgeTypes.PARTITION))
 
 
 class CongruenceEdgeTransformer(GraphTransformer):
@@ -278,7 +313,68 @@ class CongruenceEdgeTransformer(GraphTransformer):
     @classmethod
     def objects(cls, graph):
         return (e for e in graph.iteredges() if \
-           EdgeTypes.is_type(e, EdgeTypes.CONGRUENCE))
+           Utils.is_edge_type(e, EdgeTypes.CONGRUENCE))
+
+
+class RemovedNodeTransformer(GraphTransformer):
+    """
+    Decorate removed nodes.
+    """
+
+    @staticmethod
+    def xform_object(graph, obj):
+        obj.attr['style'] = 'dashed'
+
+    @classmethod
+    def objects(cls, graph):
+        return (e for e in graph.iternodes() if \
+           Utils.is_diff_status(e, DiffStatuses.REMOVED))
+
+
+class AddedNodeTransformer(GraphTransformer):
+    """
+    Decorate added nodes.
+    """
+
+    @staticmethod
+    def xform_object(graph, obj):
+        obj.attr['style'] = 'filled'
+        obj.attr['color'] = 'lightgray'
+
+    @classmethod
+    def objects(cls, graph):
+        return (e for e in graph.iternodes() if \
+           Utils.is_diff_status(e, DiffStatuses.ADDED))
+
+
+class AddedEdgeTransformer(GraphTransformer):
+    """
+    Decorate added edges.
+    """
+
+    @staticmethod
+    def xform_object(graph, obj):
+        obj.attr['penwidth'] = '7.0'
+
+    @classmethod
+    def objects(cls, graph):
+        return (e for e in graph.iteredges() if \
+           Utils.is_diff_status(e, DiffStatuses.ADDED))
+
+
+class RemovedEdgeTransformer(GraphTransformer):
+    """
+    Decorate removed edges.
+    """
+
+    @staticmethod
+    def xform_object(graph, obj):
+        obj.attr['penwidth'] = '0.02'
+
+    @classmethod
+    def objects(cls, graph):
+        return (e for e in graph.iteredges() if \
+           Utils.is_diff_status(e, DiffStatuses.REMOVED))
 
 
 class GraphTransformers(object):

@@ -18,10 +18,10 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    pyblk._write
-    ============
+    pyblk._readwrite._utils
+    =======================
 
-    Tools to write out a graph.
+    Utilities for reading and writing.
 
     .. moduleauthor::  mulhern <amulhern@redhat.com>
 """
@@ -31,26 +31,45 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import networkx as nx
+import io
+
+import six
 
 
-class Rewriter(object):
+class StringUtils(object):
     """
-    Rewrite graph for output.
+    String related utilities.
     """
     # pylint: disable=too-few-public-methods
 
     @staticmethod
-    def stringize(graph):
+    def as_string(graph, write_func):
         """
-        Xform node and edge types to strings.
-        """
-        edge_types = nx.get_edge_attributes(graph, 'edgetype')
-        for key, value in edge_types.items():
-            edge_types[key] = str(value)
-        nx.set_edge_attributes(graph, 'edgetype', edge_types)
+        Return the entire graph as a single string in a structured format.
 
-        node_types = nx.get_node_attributes(graph, 'nodetype')
-        for key, value in node_types.items():
-            node_types[key] = str(value)
-        nx.set_node_attributes(graph, 'nodetype', node_types)
+        :param `DiGraph` graph: the graph
+        :param write_func: the function to write the graph
+        :type write_func: `DiGraph` * file -> NoneType
+        :returns: the graph as a stringlike thing
+        """
+        # pylint: disable=redefined-variable-type
+        if six.PY2:
+            output = io.BytesIO()
+        else:
+            output = io.StringIO()
+        write_func(graph, output)
+        return output.getvalue()
+
+    @staticmethod
+    def from_string(instr, read_func):
+        """
+        Get a graph from a string.
+
+        :param read_func: a function that reads data from an input stream
+        """
+        # pylint: disable=redefined-variable-type
+        if six.PY2:
+            infile = io.BytesIO(instr.encode())
+        else:
+            infile = io.StringIO(instr)
+        return read_func(infile)

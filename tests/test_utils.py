@@ -18,10 +18,10 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    tests.constants
-    ===============
+    tests.test_utils
+    ================
 
-    Constants for testing.
+    Tests utilities.
 
     .. moduleauthor:: mulhern <amulhern@redhat.com>
 """
@@ -32,24 +32,21 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import pyudev
-
 import pyblk
 
-CONTEXT = pyudev.Context()
-DEVICES = CONTEXT.list_devices()
+from ._constants import GRAPH
 
-# pylint: disable=too-many-function-args
+class TestGraphUtils(object):
+    """
+    Test utilities that work over networkx graphs.
+    """
+    # pylint: disable=too-few-public-methods
 
-SLAVES = [d for d in DEVICES if list(pyblk.slaves(CONTEXT, d, False))]
+    def test_roots(self):
+        """
+        Verify that roots are really roots.
+        """
+        roots = pyblk.GraphUtils.get_roots(GRAPH)
+        in_degrees = GRAPH.in_degree(roots)
 
-HOLDERS = [d for d in DEVICES if list(pyblk.holders(CONTEXT, d, False))]
-
-BOTHS = list(set(SLAVES).intersection(set(HOLDERS)))
-
-EITHERS = list(set(SLAVES).union(set(HOLDERS)))
-
-GRAPH = pyblk.GenerateGraph.get_graph(CONTEXT, "graph")
-
-DECORATED = pyblk.GenerateGraph.get_graph(CONTEXT, "graph")
-pyblk.GenerateGraph.decorate_graph(CONTEXT, DECORATED)
+        assert all(in_degrees[r] == 0 for r in roots)

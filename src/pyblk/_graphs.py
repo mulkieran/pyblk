@@ -31,16 +31,19 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from collections import defaultdict
+
 import networkx as nx
 
+from ._decorations import DevlinkValues
 from ._decorations import Decorator
+from ._decorations import SysfsAttributes
 from ._decorations import UdevProperties
 
+from . import _compare
 from . import _display
 from . import _print
 from . import _structure
-from . import _utils
-from . import _write
 
 
 class GenerateGraph(object):
@@ -55,7 +58,7 @@ class GenerateGraph(object):
 
         :param `Context` context: the libudev context
         :return: the generated graph
-        :rtype: `MultiDiGraph`
+        :rtype: `DiGraph`
         """
         graph_classes = [
            _structure.DMPartitionGraphs,
@@ -63,10 +66,7 @@ class GenerateGraph(object):
            _structure.SpindleGraphs,
            _structure.SysfsBlockGraphs
         ]
-        return nx.compose_all(
-           (t.complete(context) for t in graph_classes),
-           name=name
-        )
+        return _structure.Graph.graph(context, name, graph_classes)
 
     @staticmethod
     def decorate_graph(context, graph):
@@ -74,26 +74,22 @@ class GenerateGraph(object):
         Decorate a graph with additional properties.
 
         :param `Context` context: the libudev context
-        :param `MultiDiGraph` graph: the graph
+        :param `DiGraph` graph: the graph
         """
+        table = dict()
+
         properties = ['DEVNAME', 'DEVPATH', 'DEVTYPE']
-        table = UdevProperties.udev_properties(context, graph, properties)
-        Decorator.decorate(graph, table)
+        table.update(UdevProperties.udev_properties(context, graph, properties))
 
+        attributes = ['size', 'dm/name']
+        table.update(
+           SysfsAttributes.sysfs_attributes(context, graph, attributes)
+        )
 
-class RewriteGraph(object):
-    """
-    Convert graph so that it is writable.
-    """
-    # pylint: disable=too-few-public-methods
+        categories = ['by-path']
+        table.update(DevlinkValues.devlink_values(context, graph, categories))
 
-    @staticmethod
-    def convert_graph(graph):
-        """
-        Do any necessary graph conversions so that it can be output.
-
-        """
-        _write.Rewriter.stringize(graph)
+        Decorator.decorate_nodes(graph, table)
 
 
 class DisplayGraph(object):
@@ -107,7 +103,7 @@ class DisplayGraph(object):
         """
         Convert graph to graphviz format.
 
-        :param `MultiDiGraph` graph: the graph
+        :param `DiGraph` graph: the graph
         :returns: a graphviz graph
 
         Designate its general layout and mark or rearrange nodes as appropriate.
@@ -117,11 +113,14 @@ class DisplayGraph(object):
         dot_graph.layout(prog="dot")
 
         xformers = [
-           _display.PartitionedDiskTransformer,
            _display.SpindleTransformer,
            _display.PartitionTransformer,
            _display.PartitionEdgeTransformer,
-           _display.CongruenceEdgeTransformer
+           _display.CongruenceEdgeTransformer,
+           _display.AddedNodeTransformer,
+           _display.RemovedNodeTransformer,
+           _display.AddedEdgeTransformer,
+           _display.RemovedEdgeTransformer
         ]
 
         _display.GraphTransformers.xform(dot_graph, xformers)
@@ -135,41 +134,159 @@ class PrintGraph(object):
     # pylint: disable=too-few-public-methods
 
     @staticmethod
-    def print_graph(out, graph, inverse=False):
+    def print_graph(out, graph):
         """
         Print a graph.
 
         :param `file` out: print destination
-        :param `MultiDiGraph` graph: the graph
+        :param `DiGraph` graph: the graph
         """
-        if inverse:
-            graph = graph.reverse(copy=True)
+        justification = defaultdict(lambda: '<')
+        justification['SIZE'] = '>'
+        name_funcs = [
+           _print.NodeGetters.DMNAME,
+           _print.NodeGetters.DEVNAME,
+           _print.NodeGetters.IDENTIFIER
+        ]
+        line_info = _print.LineInfo(
+           graph,
+           ['NAME', 'DEVTYPE', 'DIFFSTATUS', 'BY-PATH', 'SIZE'],
+           justification,
+           {
+              'NAME' : name_funcs,
+              'DEVTYPE': [_print.NodeGetters.DEVTYPE],
+              'DIFFSTATUS': [_print.NodeGetters.DIFFSTATUS],
+              'SIZE': [_print.NodeGetters.SIZE],
+              'BY-PATH': [_print.NodeGetters.BY_PATH]
+           }
+        )
 
-        key_map = nx.get_node_attributes(graph, 'identifier')
-        key_func = lambda n: key_map[n]
-        roots = sorted(_utils.GraphUtils.get_roots(graph), key=key_func)
+        lines = _print.LineArrangements.node_strings_from_graph(
+           _print.LineArrangementsConfig(
+              line_info.info,
+              lambda k, v: str(v),
+              'NAME'
+           ),
+           graph
+        )
 
-        udev_map = nx.get_node_attributes(graph, 'UDEV')
+        lines = list(_print.XformLines.xform(line_info.keys, lines))
+        lines = _print.Print.lines( # pylint: disable=redefined-variable-type
+           line_info.keys,
+           lines,
+           2,
+           line_info.alignment
+        )
+        for line in lines:
+            print(line, end="\n", file=out)
 
-        def info_func(node):
-            """
-            Function to generate information to be printed for ``node``.
 
-            :param `Node` node: the node
-            :returns: a list of informational strings
-            :rtype: list of str
-            """
-            udev_info = udev_map.get(node)
-            devname = udev_info and udev_info.get('DEVNAME')
-            return [devname or key_map[node]]
+class DiffGraph(object):
+    """
+    Take the difference of two graphs.
+    """
+    # pylint: disable=too-few-public-methods
 
-        for root in roots:
-            _print.Print.output_nodes(
-               out,
-               info_func,
-               '{0}',
-               graph,
-               True,
-               0,
-               root
+    @staticmethod
+    def do_diff(graph1, graph2, diff):
+        """
+        Generate the appropriate graph.
+
+        :param `DiGraph` graph1: a graph
+        :param `DiGraph` graph2: a graph
+        :param str diff: the diff to perform
+        """
+        node_matcher = _compare.Matcher(['identifier', 'nodetype'], 'node')
+        match_func = node_matcher.get_match
+        edge_matcher = lambda g1, g2: lambda x, y: x == y
+        if diff == "full":
+            return _compare.Differences.full_diff(
+               graph1,
+               graph2,
+               match_func,
+               edge_matcher
             )
+        elif diff == "left":
+            return _compare.Differences.left_diff(
+               graph1,
+               graph2,
+               match_func,
+               edge_matcher
+            )
+        elif diff == "right":
+            return _compare.Differences.right_diff(
+               graph1,
+               graph2,
+               match_func,
+               edge_matcher
+            )
+        else:
+            assert False
+
+
+class CompareGraph(object):
+    """
+    Compare graphs with boolean result.
+    """
+
+    @staticmethod
+    def equivalent(graph1, graph2):
+        """
+        Do ``graph1`` and ``graph2`` have the same shape?
+
+        The type of storage entity that a node represents is considered
+        significant, but not its identity.
+
+        :param `DiGraph` graph1: a graph
+        :param `DiGraph` graph2: a graph
+        :returns: True if the graphs are equivalent, otherwise False
+        :rtype: bool
+        """
+        return _compare.Compare.is_equivalent(
+           graph1,
+           graph2,
+           lambda x, y: x['nodetype'] is y['nodetype'],
+           lambda x, y: x['edgetype'] is y['edgetype']
+        )
+
+    @staticmethod
+    def identical(graph1, graph2):
+        """
+        Are ``graph1`` and ``graph2`` identical?
+
+        The identity of every node matters.
+
+        :param `DiGraph` graph1: a graph
+        :param `DiGraph` graph2: a graph
+
+        :returns: True if the graphs are identical, otherwise False
+        :rtype: boolean
+        """
+        node_matcher = _compare.Matcher(['identifier', 'nodetype'], 'node')
+
+        return _compare.Compare.is_equivalent(
+           graph1,
+           graph2,
+           node_matcher.get_iso_match(),
+           lambda x, y: True
+        )
+
+    @classmethod
+    def compare(cls, graph1, graph2):
+        """
+        Calculate relationship between ``graph1`` and ``graph2``.
+
+        :param `DiGraph` graph1: a graph
+        :param `DiGraph` graph2: a graph
+
+        :returns: 0 if identical, 1 if equivalent, otherwise 2
+        :rtype: int
+        """
+
+        if cls.identical(graph1, graph2):
+            return 0
+
+        if cls.equivalent(graph1, graph2):
+            return 1
+
+        return 2

@@ -18,38 +18,18 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 """
-    tests.constants
-    ===============
+    pyblk._print
+    ============
 
-    Constants for testing.
+    Printing facilities for graphs.
 
-    .. moduleauthor:: mulhern <amulhern@redhat.com>
+    .. moduleauthor::  Anne Mulhern  <amulhern@redhat.com>
 """
+from ._print import LineArrangements
+from ._print import LineArrangementsConfig
+from ._print import LineInfo
+from ._print import Print
+from ._print import XformLines
 
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-import pyudev
-
-import pyblk
-
-CONTEXT = pyudev.Context()
-DEVICES = CONTEXT.list_devices()
-
-# pylint: disable=too-many-function-args
-
-SLAVES = [d for d in DEVICES if list(pyblk.slaves(CONTEXT, d, False))]
-
-HOLDERS = [d for d in DEVICES if list(pyblk.holders(CONTEXT, d, False))]
-
-BOTHS = list(set(SLAVES).intersection(set(HOLDERS)))
-
-EITHERS = list(set(SLAVES).union(set(HOLDERS)))
-
-GRAPH = pyblk.GenerateGraph.get_graph(CONTEXT, "graph")
-
-DECORATED = pyblk.GenerateGraph.get_graph(CONTEXT, "graph")
-pyblk.GenerateGraph.decorate_graph(CONTEXT, DECORATED)
+from ._helpers import NodeGetter
+from ._helpers import NodeGetters

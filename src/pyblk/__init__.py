@@ -25,15 +25,36 @@
 
     .. moduleauthor::  Anne Mulhern  <amulhern@redhat.com>
 """
+from ._attributes import DiffStatuses
+from ._attributes import EdgeTypes
+from ._attributes import NodeTypes
 
+from ._graphs import CompareGraph
+from ._graphs import DiffGraph
 from ._graphs import DisplayGraph
 from ._graphs import GenerateGraph
 from ._graphs import PrintGraph
-from ._graphs import RewriteGraph
 
+from ._decorations import Decorator
+from ._decorations import DifferenceMarkers
 from ._decorations import UdevProperties
 
 from ._compare import Compare
+from ._compare import Differences
+from ._compare import Matcher
+
+from ._print import LineArrangements
+from ._print import LineArrangementsConfig
+from ._print import LineInfo
+from ._print import Print
+from ._print import XformLines
+
+from ._print import NodeGetter
+from ._print import NodeGetters
+
+from ._readwrite import StringUtils
+from ._readwrite import Reader
+from ._readwrite import Writer
 
 from ._structure import DMPartitionGraphs
 from ._structure import PartitionGraphs
@@ -44,5 +65,4 @@ from ._structure import SysfsTraversal
 from ._traversal import holders
 from ._traversal import slaves
 
-from ._types import EdgeTypes
-from ._types import NodeTypes
+from ._utils import GraphUtils
